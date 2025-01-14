@@ -2013,7 +2013,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 891807441}
         m_TargetAssemblyTypeName: SpawnCubo, Assembly-CSharp
         m_MethodName: SpawnCube
         m_Mode: 1
@@ -5331,6 +5331,7 @@ GameObject:
   m_Component:
   - component: {fileID: 891807440}
   - component: {fileID: 891807441}
+  - component: {fileID: 891807442}
   m_Layer: 0
   m_Name: UI
   m_TagString: Untagged
@@ -5365,6 +5366,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d12d2ce7469bfe342bda3b85cd1835bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cuboPrefab: {fileID: 8069956676135863939, guid: 02c389e4281839c42b1742cff1a5c103, type: 3}
+  spawnPoint: {fileID: 365591358}
+--- !u!114 &891807442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891807439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 868acfff3cfbec848bb44a3a00f0b4eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   cuboPrefab: {fileID: 8069956676135863939, guid: 02c389e4281839c42b1742cff1a5c103, type: 3}
@@ -6533,7 +6548,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 891807441}
         m_TargetAssemblyTypeName: SpawnCubo, Assembly-CSharp
         m_MethodName: SpawnCube
         m_Mode: 1
@@ -11778,7 +11793,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2011342857}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 891807442}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+        m_MethodName: LimpiarObjetos
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2011342857
 MonoBehaviour:
   m_ObjectHideFlags: 0
