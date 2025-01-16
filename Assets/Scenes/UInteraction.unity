@@ -13148,10 +13148,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea2f35e7890ad543ac39647cf43a024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  subMenuCarga: {fileID: 0}
+  subMenuCarga: {fileID: 1008417527}
   insertarCargaPositivaBtn: {fileID: 0}
   insertarCargaNegativaBtn: {fileID: 0}
-  puntoDeCarga: {fileID: 0}
+  puntoDeCarga: {fileID: 365591358}
   cargaValorPositiva: 10
   cargaValorNegativa: -10
 --- !u!4 &2136638485
