@@ -1,61 +1,59 @@
 using UnityEngine;
-using UnityEngine.UI; // Necesario para trabajar con botones de UI
+using UnityEngine.UI;
 
 public class CargaPuntualManager : MonoBehaviour
 {
-    public GameObject subMenuCarga; // Referencia al submenú donde se encuentran las opciones de carga
-    public Button insertarCargaPositivaBtn; // Referencia al botón de carga positiva
-    public Button insertarCargaNegativaBtn; // Referencia al botón de carga negativa
-    public Transform puntoDeCarga; // El punto de la simulación donde se insertarán las cargas
-    public float cargaValorPositiva = 10f; // Valor de la carga positiva
-    public float cargaValorNegativa = -10f; // Valor de la carga negativa
+    // Referencias a UI y objetos
+    public GameObject subMenuCarga; // El panel con los botones de carga positiva y negativa
+    public Button insertarCargaPositivaBtn; // Botón para insertar carga positiva
+    public Button insertarCargaNegativaBtn; // Botón para insertar carga negativa
+    public Transform spawnPoint; // Punto de aparición de las cargas (SpawnPoint)
+    public GameObject cargaPositivaPrefab; // Prefab de la carga positiva (Building Block esférico)
+    public GameObject cargaNegativaPrefab; // Prefab de la carga negativa (Building Block esférico)
 
     private void Start()
     {
-        // Desactivamos el submenú de carga al inicio
+        // Inicialmente, el submenú estará oculto
         subMenuCarga.SetActive(false);
 
-        // Asignamos las funciones a los botones
+        // Asignar funciones a los botones
         insertarCargaPositivaBtn.onClick.AddListener(IngresarCargaPositiva);
         insertarCargaNegativaBtn.onClick.AddListener(IngresarCargaNegativa);
     }
 
-    // Método para mostrar el submenú cuando se presiona el botón "Simulación de Cargas Puntuales"
+    // Método para activar el submenú de cargas (cuando se presiona el botón de "Cargas Puntuales")
     public void MostrarSubMenuCargas()
     {
-        subMenuCarga.SetActive(true);
+        subMenuCarga.SetActive(true); // Muestra el submenú con los botones de carga
     }
 
-    // Método para insertar una carga puntual positiva en la simulación
+    // Método para insertar una carga positiva
     public void IngresarCargaPositiva()
     {
-        CrearCarga(cargaValorPositiva);
+        CrearCarga(cargaPositivaPrefab); // Crear la carga positiva en el SpawnPoint
     }
 
-    // Método para insertar una carga puntual negativa en la simulación
+    // Método para insertar una carga negativa
     public void IngresarCargaNegativa()
     {
-        CrearCarga(cargaValorNegativa);
+        CrearCarga(cargaNegativaPrefab); // Crear la carga negativa en el SpawnPoint
     }
 
-    // Método para crear una carga en el punto de carga especificado
-    private void CrearCarga(float cargaValor)
+    // Método que crea una carga (positiva o negativa) en el punto de carga
+    private void CrearCarga(GameObject cargaPrefab)
     {
-        if (puntoDeCarga != null)
+        if (cargaPrefab != null && spawnPoint != null)
         {
-            // Creación de la carga como un cubo (por ejemplo) que simboliza la carga puntual
-            GameObject carga = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            carga.transform.position = puntoDeCarga.position;
+            // Instanciamos la carga en el SpawnPoint especificado
+            GameObject carga = Instantiate(cargaPrefab, spawnPoint.position, Quaternion.identity);
+            carga.name = "Carga " + cargaPrefab.name;
 
-            // Establecemos un valor de "carga" como nombre del objeto, o puedes agregarle un componente para representar la carga
-            carga.name = "Carga " + cargaValor;
-
-            // Opcional: puedes añadirle un componente que represente la carga (por ejemplo, un script o un visualizador)
-            Debug.Log("Carga insertada: " + cargaValor);
+            // Aquí puedes agregar más lógica para manipular la carga si es necesario
+            Debug.Log("Carga creada: " + carga.name);
         }
         else
         {
-            Debug.LogError("Punto de carga no asignado.");
+            Debug.LogError("Prefab de carga o SpawnPoint no asignados correctamente.");
         }
     }
 }
