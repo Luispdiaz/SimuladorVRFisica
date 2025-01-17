@@ -131,11 +131,19 @@ public class CargaPuntualManager : MonoBehaviour
             // Actualiza la rotación del indicador
             if (fuerzaTotal != Vector3.zero)
             {
-                // Calcula la rotación que hará que el indicador apunte en la dirección de la fuerza total
-                Quaternion rotacion = Quaternion.LookRotation(fuerzaTotal, Vector3.up);
-
-                // Ajusta la rotación para que apunte correctamente según la orientación de tu flecha
-                indicadorActual.transform.rotation = rotacion;
+                if (indicadorActual.transform.childCount > 0)
+                {
+                    // Si el indicador es 2D (en este caso un sprite de flecha)
+                    Vector2 direccion2D = new Vector2(fuerzaTotal.x, fuerzaTotal.y);
+                    float angulo = Mathf.Atan2(direccion2D.y, direccion2D.x) * Mathf.Rad2Deg;
+                    indicadorActual.transform.rotation = Quaternion.Euler(0, 0, angulo);
+                }
+                else
+                {
+                    // Si el indicador es 3D, usamos LookRotation
+                    Quaternion rotacion = Quaternion.LookRotation(fuerzaTotal, Vector3.up);
+                    indicadorActual.transform.rotation = rotacion;
+                }
             }
         }
     }

@@ -231,6 +231,7 @@ GameObject:
   - component: {fileID: 8036701091604440708}
   - component: {fileID: -2533295790381271461}
   - component: {fileID: 83058158513112601}
+  - component: {fileID: 4332091296155592664}
   m_Layer: 0
   m_Name: IndicadorFuerza
   m_TagString: Untagged
@@ -294,3 +295,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4e149d0b024d404887aff5b872bf42a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4332091296155592664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6129379373410151997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c85e8b9b393dd5749b020ee2a75caa15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseFlecha: {fileID: 0}
+  puntaFlecha: {fileID: 0}
+  fuerzaMaxima: 10
