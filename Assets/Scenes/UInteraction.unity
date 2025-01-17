@@ -5222,7 +5222,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2136638484}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CargaPuntualManager, Assembly-CSharp
         m_MethodName: MostrarSubMenuCargas
         m_Mode: 1
@@ -13128,7 +13128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2136638485}
-  - component: {fileID: 2136638484}
+  - component: {fileID: 2136638486}
   m_Layer: 0
   m_Name: CargaPuntualManager
   m_TagString: Untagged
@@ -13136,7 +13136,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2136638484
+--- !u!4 &2136638485
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2136638483}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.5104877, y: -0.21758497, z: 5.2921505}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2136638486
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -13153,22 +13168,8 @@ MonoBehaviour:
   insertarCargaNegativaBtn: {fileID: 675066373}
   spawnPoint: {fileID: 365591358}
   cargaPositivaPrefab: {fileID: 8069956676135863939, guid: 02c389e4281839c42b1742cff1a5c103, type: 3}
-  cargaNegativaPrefab: {fileID: 0}
---- !u!4 &2136638485
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2136638483}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5104877, y: -0.21758497, z: 5.2921505}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  cargaNegativaPrefab: {fileID: 3345438392130300214, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
+  indicadorFuerzaPrefab: {fileID: 6129379373410151997, guid: 67815370582a59946960b49fbb666036, type: 3}
 --- !u!1 &2138702807
 GameObject:
   m_ObjectHideFlags: 0
@@ -13404,8 +13405,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d12d2ce7469bfe342bda3b85cd1835bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cuboPrefab: {fileID: 8069956676135863939, guid: 02c389e4281839c42b1742cff1a5c103, type: 3}
-  spawnPoint: {fileID: 365591358}
+  cuboPrefab: {fileID: 0}
+  spawnPoint: {fileID: 0}
 --- !u!1 &2140272859
 GameObject:
   m_ObjectHideFlags: 0
@@ -13627,63 +13628,6 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.00616638, y: -0.030066561, z: -0.020585023}
     m_Extent: {x: 0.033926036, y: 0.041736547, z: 0.054627255}
   m_DirtyAABB: 0
---- !u!1001 &8238294608492152006
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 3345438392130300214, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
-      propertyPath: m_Name
-      value: '[BuildingBlock] Cube'
-      objectReference: {fileID: 0}
-    - target: {fileID: 8399071243572187752, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8399071243572187752, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8399071243572187752, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8399071243572187752, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8399071243572187752, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8399071243572187752, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8399071243572187752, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8399071243572187752, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8399071243572187752, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8399071243572187752, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -13694,4 +13638,3 @@ SceneRoots:
   - {fileID: 561936962}
   - {fileID: 365591358}
   - {fileID: 2136638485}
-  - {fileID: 8238294608492152006}

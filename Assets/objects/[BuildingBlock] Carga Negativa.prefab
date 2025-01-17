@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4855424997969937160}
   - component: {fileID: 9080210021693926963}
   - component: {fileID: 1249108205768457450}
+  - component: {fileID: 1847003099114842315}
   m_Layer: 0
   m_Name: '[BuildingBlock] Carga Negativa'
   m_TagString: Untagged
@@ -50,7 +51,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockId: 7358e191-33b7-43ca-b066-b2f00531ac66
-  instanceId: 68a45045-2643-42db-8416-bf11343747ec
+  instanceId: 92ca7bf8-dd49-481e-9de9-6f6960868a71
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: 
@@ -156,6 +157,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1847003099114842315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3345438392130300214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3678b69bc9ec894b992c28dfb835811, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  esPositiva: 0
 --- !u!1 &8010746005632068460
 GameObject:
   m_ObjectHideFlags: 0
@@ -204,7 +218,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockId: f8766c17-aaf8-4b55-9431-de8deea83842
-  instanceId: 5c6b9460-f582-44e4-9db3-d79b549ffccd
+  instanceId: 7f9eecb3-bdca-461a-a9ef-566ba32f8d09
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: f8338144-8280-4ff6-9455-ae2bb9c20fe8
