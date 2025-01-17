@@ -131,7 +131,11 @@ public class CargaPuntualManager : MonoBehaviour
             // Actualiza la rotación del indicador
             if (fuerzaTotal != Vector3.zero)
             {
-                indicadorActual.transform.rotation = Quaternion.LookRotation(fuerzaTotal);
+                // Calcula la rotación que hará que el indicador apunte en la dirección de la fuerza total
+                Quaternion rotacion = Quaternion.LookRotation(fuerzaTotal, Vector3.up);
+
+                // Ajusta la rotación para que apunte correctamente según la orientación de tu flecha
+                indicadorActual.transform.rotation = rotacion;
             }
         }
     }
