@@ -4208,8 +4208,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d12d2ce7469bfe342bda3b85cd1835bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cuboPrefab: {fileID: 3345438392130300214, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
-  spawnPoint: {fileID: 365591358}
+  cuboPrefab: {fileID: 0}
+  spawnPoint: {fileID: 0}
 --- !u!1 &676022858
 GameObject:
   m_ObjectHideFlags: 0
