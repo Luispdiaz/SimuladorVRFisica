@@ -102,21 +102,18 @@ public class CargaPuntualManager : MonoBehaviour
     {
         if (indicadorActual != null)
         {
-            Vector3 fuerzaTotal = Vector3.zero; // Inicia la fuerza acumulada en cero
+            Vector3 fuerzaTotal = Vector3.zero;
 
             foreach (GameObject carga in cargas)
             {
-                // Obtén la dirección de la carga al indicador
+                // Calcula la dirección de la fuerza desde la carga hacia el indicador
                 Vector3 direccion = indicadorActual.transform.position - carga.transform.position;
                 float distancia = direccion.magnitude;
 
-                // Normaliza la dirección
                 direccion.Normalize();
+                float magnitudFuerza = 1f / (distancia * distancia);
 
-                // Determina la magnitud de la fuerza (Ley de Coulomb simplificada)
-                float magnitudFuerza = 1f / (distancia * distancia); // Ajusta este cálculo según tus necesidades
-
-                // Si la carga es positiva, suma la fuerza; si es negativa, resta la fuerza
+                // Aplica la fuerza dependiendo del tipo de carga
                 Carga cargaScript = carga.GetComponent<Carga>();
                 if (cargaScript != null)
                 {
@@ -131,7 +128,7 @@ public class CargaPuntualManager : MonoBehaviour
                 }
             }
 
-            // Si hay una fuerza resultante, rota el indicador hacia esa dirección
+            // Actualiza la rotación del indicador
             if (fuerzaTotal != Vector3.zero)
             {
                 indicadorActual.transform.rotation = Quaternion.LookRotation(fuerzaTotal);
