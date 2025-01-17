@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
+using System.Collections.Generic; // Necesario para usar List
 
 public class CargaPuntualManager : MonoBehaviour
 {
@@ -13,8 +13,8 @@ public class CargaPuntualManager : MonoBehaviour
     public GameObject cargaNegativaPrefab; // Prefab de la carga negativa (Building Block esférico)
     public GameObject indicadorFuerzaPrefab; // Prefab del objeto indicador de fuerzas (como una flecha)
 
-    // Lista para almacenar las cargas generadas
-    private List<GameObject> cargas = new List<GameObject>();
+    private List<GameObject> cargas = new List<GameObject>(); // Lista para almacenar las cargas
+    private GameObject indicadorActual; // Referencia al indicador de fuerza instanciado
 
     private void Start()
     {
@@ -24,6 +24,15 @@ public class CargaPuntualManager : MonoBehaviour
         // Asignar funciones a los botones
         insertarCargaPositivaBtn.onClick.AddListener(IngresarCargaPositiva);
         insertarCargaNegativaBtn.onClick.AddListener(IngresarCargaNegativa);
+
+        // Crear el indicador de fuerza en la posición deseada
+        CrearIndicador();
+    }
+
+    private void Update()
+    {
+        // Actualizar la dirección del indicador de fuerza en cada frame
+        ActualizarIndicador();
     }
 
     // Método para activar el submenú de cargas (cuando se presiona el botón de "Cargas Puntuales")
@@ -35,33 +44,25 @@ public class CargaPuntualManager : MonoBehaviour
     // Método para insertar una carga positiva
     public void IngresarCargaPositiva()
     {
-        CrearCarga(cargaPositivaPrefab, true); // Crear la carga positiva en el SpawnPoint
+        CrearCarga(cargaPositivaPrefab); // Crear la carga positiva en el SpawnPoint
     }
 
     // Método para insertar una carga negativa
     public void IngresarCargaNegativa()
     {
-        CrearCarga(cargaNegativaPrefab, false); // Crear la carga negativa en el SpawnPoint
+        CrearCarga(cargaNegativaPrefab); // Crear la carga negativa en el SpawnPoint
     }
 
     // Método que crea una carga (positiva o negativa) en el punto de carga
-    private void CrearCarga(GameObject cargaPrefab, bool esPositiva)
+    private void CrearCarga(GameObject cargaPrefab)
     {
         if (cargaPrefab != null && spawnPoint != null)
         {
             // Instanciamos la carga en el SpawnPoint especificado
             GameObject carga = Instantiate(cargaPrefab, spawnPoint.position, Quaternion.identity);
-            carga.name = "Carga " + (esPositiva ? "Positiva" : "Negativa") + " " + cargas.Count;
+            carga.name = "Carga " + cargaPrefab.name;
 
-            // Añadir Rigidbody para manejar las fuerzas físicas
-            Rigidbody rb = carga.AddComponent<Rigidbody>();
-            rb.useGravity = false; // Desactivar gravedad para simular cargas puntuales
-
-            // Configurar el tipo de carga (repulsión o atracción)
-            Carga cargaScript = carga.AddComponent<Carga>();
-            cargaScript.esPositiva = esPositiva;
-
-            // Añadimos la carga a la lista para futuras referencias
+            // Agregar la carga a la lista de cargas
             cargas.Add(carga);
 
             Debug.Log("Carga creada: " + carga.name);
@@ -72,37 +73,69 @@ public class CargaPuntualManager : MonoBehaviour
         }
     }
 
-    // Método para actualizar el indicador de fuerza
-    public void ActualizarIndicadorFuerza(Vector3 posicionIndicador)
+    // Método para crear el indicador de fuerza
+    private void CrearIndicador()
     {
-        if (indicadorFuerzaPrefab != null && cargas.Count > 0)
+        if (indicadorFuerzaPrefab != null)
         {
-            Vector3 fuerzaTotal = Vector3.zero;
+            // Instanciar el indicador en la posición fija
+            indicadorActual = Instantiate(indicadorFuerzaPrefab, new Vector3(0.1f, 1.2f, 0.9f), Quaternion.identity);
+            indicadorActual.name = "Indicador de Fuerza";
 
-            // Calcular la fuerza neta en el punto del indicador
-            foreach (GameObject carga in cargas)
+            // Asegurarnos de que no se mueva
+            Rigidbody rb = indicadorActual.GetComponent<Rigidbody>();
+            if (rb != null)
             {
-                if (carga != null)
-                {
-                    Carga cargaScript = carga.GetComponent<Carga>();
-                    Vector3 direccion = posicionIndicador - carga.transform.position;
-                    float distancia = direccion.magnitude;
-
-                    // Calcular la magnitud de la fuerza (simulación simplificada)
-                    float magnitudFuerza = (cargaScript.esPositiva ? 1 : -1) / Mathf.Pow(distancia, 2);
-
-                    // Sumar la fuerza al total
-                    fuerzaTotal += direccion.normalized * magnitudFuerza;
-                }
+                rb.isKinematic = true;
             }
 
-            // Instanciar o mover el indicador al punto especificado
-            GameObject indicador = Instantiate(indicadorFuerzaPrefab, posicionIndicador, Quaternion.identity);
-            indicador.transform.forward = fuerzaTotal.normalized; // Orientar el indicador hacia la dirección de la fuerza
+            Debug.Log("Indicador de fuerza creado.");
         }
         else
         {
-            Debug.LogError("No hay cargas creadas o indicadorFuerzaPrefab no asignado.");
+            Debug.LogError("Prefab del indicador de fuerza no asignado.");
+        }
+    }
+
+    // Método para calcular la dirección de la fuerza y rotar el indicador
+    private void ActualizarIndicador()
+    {
+        if (indicadorActual != null)
+        {
+            Vector3 fuerzaTotal = Vector3.zero; // Inicia la fuerza acumulada en cero
+
+            foreach (GameObject carga in cargas)
+            {
+                // Obtén la dirección de la carga al indicador
+                Vector3 direccion = indicadorActual.transform.position - carga.transform.position;
+                float distancia = direccion.magnitude;
+
+                // Normaliza la dirección
+                direccion.Normalize();
+
+                // Determina la magnitud de la fuerza (Ley de Coulomb simplificada)
+                float magnitudFuerza = 1f / (distancia * distancia); // Ajusta este cálculo según tus necesidades
+
+                // Si la carga es positiva, suma la fuerza; si es negativa, resta la fuerza
+                Carga cargaScript = carga.GetComponent<Carga>();
+                if (cargaScript != null)
+                {
+                    if (cargaScript.esPositiva)
+                    {
+                        fuerzaTotal += direccion * magnitudFuerza;
+                    }
+                    else
+                    {
+                        fuerzaTotal -= direccion * magnitudFuerza;
+                    }
+                }
+            }
+
+            // Si hay una fuerza resultante, rota el indicador hacia esa dirección
+            if (fuerzaTotal != Vector3.zero)
+            {
+                indicadorActual.transform.rotation = Quaternion.LookRotation(fuerzaTotal);
+            }
         }
     }
 }
