@@ -5,67 +5,68 @@ using System.Collections.Generic; // Necesario para usar List
 public class CargaPuntualManager : MonoBehaviour
 {
     // Referencias a UI y objetos
-    public GameObject subMenuCarga; // El panel con los botones de carga positiva y negativa
+    public GameObject subMenuCarga; // Panel del submenú
     public Button insertarCargaPositivaBtn; // Botón para insertar carga positiva
     public Button insertarCargaNegativaBtn; // Botón para insertar carga negativa
-    public Transform spawnPoint; // Punto de aparición de las cargas (SpawnPoint)
-    public GameObject cargaPositivaPrefab; // Prefab de la carga positiva (Building Block esférico)
-    public GameObject cargaNegativaPrefab; // Prefab de la carga negativa (Building Block esférico)
-    public GameObject indicadorFuerzaPrefab; // Prefab del objeto indicador de fuerzas (como una flecha)
+    public Button botonSensor; // Botón para crear sensores (indicadores de fuerza)
+    public Transform spawnPoint; // Punto de aparición de las cargas
+    public GameObject cargaPositivaPrefab; // Prefab de la carga positiva
+    public GameObject cargaNegativaPrefab; // Prefab de la carga negativa
+    public GameObject indicadorFuerzaPrefab; // Prefab del indicador de fuerza
 
     private List<GameObject> cargas = new List<GameObject>(); // Lista para almacenar las cargas
-    private GameObject indicadorActual; // Referencia al indicador de fuerza instanciado
+    private List<GameObject> sensores = new List<GameObject>(); // Lista para almacenar los sensores creados
 
     private void Start()
     {
-        // Inicialmente, el submenú estará oculto
+        // Ocultar el submenú al inicio
         subMenuCarga.SetActive(false);
 
         // Asignar funciones a los botones
         insertarCargaPositivaBtn.onClick.AddListener(IngresarCargaPositiva);
         insertarCargaNegativaBtn.onClick.AddListener(IngresarCargaNegativa);
-
-        // Crear el indicador de fuerza en la posición deseada
-        CrearIndicador();
+        botonSensor.onClick.AddListener(CrearSensor); // Nuevo botón para sensores
     }
 
     private void Update()
     {
-        // Actualizar la dirección del indicador de fuerza en cada frame
-        ActualizarIndicador();
+        // Actualizar la dirección y rotación de todos los sensores
+        foreach (var sensor in sensores)
+        {
+            ActualizarSensor(sensor);
+        }
     }
 
-    // Método para activar el submenú de cargas (cuando se presiona el botón de "Cargas Puntuales")
     public void MostrarSubMenuCargas()
     {
-        subMenuCarga.SetActive(true); // Muestra el submenú con los botones de carga
+        subMenuCarga.SetActive(true);
     }
 
-    // Método para insertar una carga positiva
     public void IngresarCargaPositiva()
     {
-        CrearCarga(cargaPositivaPrefab); // Crear la carga positiva en el SpawnPoint
+        CrearCarga(cargaPositivaPrefab, true);
     }
 
-    // Método para insertar una carga negativa
     public void IngresarCargaNegativa()
     {
-        CrearCarga(cargaNegativaPrefab); // Crear la carga negativa en el SpawnPoint
+        CrearCarga(cargaNegativaPrefab, false);
     }
 
-    // Método que crea una carga (positiva o negativa) en el punto de carga
-    private void CrearCarga(GameObject cargaPrefab)
+    private void CrearCarga(GameObject cargaPrefab, bool esPositiva)
     {
         if (cargaPrefab != null && spawnPoint != null)
         {
-            // Instanciamos la carga en el SpawnPoint especificado
             GameObject carga = Instantiate(cargaPrefab, spawnPoint.position, Quaternion.identity);
-            carga.name = "Carga " + cargaPrefab.name;
+            carga.name = $"Carga {(esPositiva ? "Positiva" : "Negativa")}";
 
-            // Agregar la carga a la lista de cargas
+            Carga cargaScript = carga.GetComponent<Carga>();
+            if (cargaScript != null)
+            {
+                cargaScript.esPositiva = esPositiva;
+            }
+
             cargas.Add(carga);
-
-            Debug.Log("Carga creada: " + carga.name);
+            Debug.Log($"Carga creada: {carga.name}");
         }
         else
         {
@@ -73,23 +74,17 @@ public class CargaPuntualManager : MonoBehaviour
         }
     }
 
-    // Método para crear el indicador de fuerza
-    private void CrearIndicador()
+    private void CrearSensor()
     {
         if (indicadorFuerzaPrefab != null)
         {
-            // Instanciar el indicador en la posición fija
-            indicadorActual = Instantiate(indicadorFuerzaPrefab, new Vector3(0.1f, 1.2f, 0.9f), Quaternion.identity);
-            indicadorActual.name = "Indicador de Fuerza";
+            // Crear un nuevo sensor en una posición predeterminada cerca del spawnPoint
+            Vector3 posicionSensor = spawnPoint.position + new Vector3(0, 0, sensores.Count * 1.5f); // Espaciar sensores
+            GameObject sensor = Instantiate(indicadorFuerzaPrefab, posicionSensor, Quaternion.identity);
+            sensor.name = $"Sensor {sensores.Count + 1}";
 
-            // Asegurarnos de que no se mueva
-            Rigidbody rb = indicadorActual.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.isKinematic = true;
-            }
-
-            Debug.Log("Indicador de fuerza creado.");
+            sensores.Add(sensor);
+            Debug.Log($"Sensor creado: {sensor.name}");
         }
         else
         {
@@ -97,23 +92,32 @@ public class CargaPuntualManager : MonoBehaviour
         }
     }
 
-    // Método para calcular la dirección de la fuerza y rotar el indicador
-    private void ActualizarIndicador()
+    private void ActualizarSensor(GameObject sensor)
     {
-        if (indicadorActual != null)
+        Vector3 fuerzaTotal = CalcularFuerzaTotal(sensor);
+
+        // Acceder al script de IndicadorFuerza para actualizar su dirección
+        IndicadorFuerza indicador = sensor.GetComponent<IndicadorFuerza>();
+        if (indicador != null)
         {
-            Vector3 fuerzaTotal = Vector3.zero;
+            indicador.ActualizarDireccion(fuerzaTotal);
+        }
+    }
 
-            foreach (GameObject carga in cargas)
+    private Vector3 CalcularFuerzaTotal(GameObject sensor)
+    {
+        Vector3 fuerzaTotal = Vector3.zero;
+
+        foreach (GameObject carga in cargas)
+        {
+            Vector3 direccion = sensor.transform.position - carga.transform.position;
+            float distancia = direccion.magnitude;
+
+            if (distancia > 0.01f) // Evitar divisiones por 0
             {
-                // Calcula la dirección de la fuerza desde la carga hacia el indicador
-                Vector3 direccion = indicadorActual.transform.position - carga.transform.position;
-                float distancia = direccion.magnitude;
-
                 direccion.Normalize();
                 float magnitudFuerza = 1f / (distancia * distancia);
 
-                // Aplica la fuerza dependiendo del tipo de carga
                 Carga cargaScript = carga.GetComponent<Carga>();
                 if (cargaScript != null)
                 {
@@ -127,24 +131,8 @@ public class CargaPuntualManager : MonoBehaviour
                     }
                 }
             }
-
-            // Actualiza la rotación del indicador
-            if (fuerzaTotal != Vector3.zero)
-            {
-                if (indicadorActual.transform.childCount > 0)
-                {
-                    // Si el indicador es 2D (en este caso un sprite de flecha)
-                    Vector2 direccion2D = new Vector2(fuerzaTotal.x, fuerzaTotal.y);
-                    float angulo = Mathf.Atan2(direccion2D.y, direccion2D.x) * Mathf.Rad2Deg;
-                    indicadorActual.transform.rotation = Quaternion.Euler(0, 0, angulo);
-                }
-                else
-                {
-                    // Si el indicador es 3D, usamos LookRotation
-                    Quaternion rotacion = Quaternion.LookRotation(fuerzaTotal, Vector3.up);
-                    indicadorActual.transform.rotation = rotacion;
-                }
-            }
         }
+
+        return fuerzaTotal;
     }
 }
