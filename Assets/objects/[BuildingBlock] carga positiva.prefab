@@ -158,7 +158,7 @@ GameObject:
   - component: {fileID: 5633206453380839237}
   m_Layer: 0
   m_Name: '[BuildingBlock] carga positiva'
-  m_TagString: Untagged
+  m_TagString: Destructible
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

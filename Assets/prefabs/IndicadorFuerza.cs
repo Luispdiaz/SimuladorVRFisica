@@ -6,8 +6,8 @@ public class IndicadorFuerza : MonoBehaviour
     public Transform cuerpo;      // Transform del cuerpo (cilindro)
     public Transform punta;       // Transform de la punta (pirámide)
 
-    private float distanciaBaseCuerpo = 0.5f; // Distancia ajustada entre la base y el cuerpo
-    private float distanciaCuerpoPunta = 0.7f; // Distancia entre el cuerpo y la punta
+    private float distanciaBaseCuerpo = 0.11f; // Distancia ajustada entre la base y el cuerpo
+    private float distanciaCuerpoPunta = 0.09f; // Distancia entre el cuerpo y la punta
 
     /// <summary>
     /// Actualiza la dirección del indicador basado en la fuerza neta.
