@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 9080210021693926963}
   - component: {fileID: 1249108205768457450}
   - component: {fileID: 1847003099114842315}
+  - component: {fileID: 8518630811837186543}
   m_Layer: 0
   m_Name: '[BuildingBlock] Carga Negativa'
   m_TagString: Destructible
@@ -170,6 +171,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   esPositiva: 0
+  fuerza: 1
+--- !u!114 &8518630811837186543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3345438392130300214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 576cd2c504cbed8408d1315296ef1876, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8010746005632068460
 GameObject:
   m_ObjectHideFlags: 0

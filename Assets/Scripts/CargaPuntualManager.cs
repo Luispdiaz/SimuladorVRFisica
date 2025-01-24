@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI; // Asegúrate de importar este espacio de nombres
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class CargaPuntualManager : MonoBehaviour
@@ -10,13 +10,18 @@ public class CargaPuntualManager : MonoBehaviour
     public Button insertarCargaNegativaBtn; // Botón para insertar carga negativa
     public Button botonSensor; // Botón para crear sensores (indicadores de fuerza)
     public Button closeButton; // Botón para cerrar el submenú
-    public Transform spawnPoint; // Punto de aparición de las cargas
+    public Button recalcularButton; // Botón para recalcular las mini esferas
+    public Transform spawnPoint; // Punto de aparición de las cargas e indicadores
     public GameObject cargaPositivaPrefab; // Prefab de la carga positiva
     public GameObject cargaNegativaPrefab; // Prefab de la carga negativa
     public GameObject indicadorFuerzaPrefab; // Prefab del indicador de fuerza
+    public GameObject miniSpherePrefab; // Prefab de la mini esfera para las líneas punteadas
+    public Slider fuerzaSlider; // Slider para ajustar la fuerza de las cargas
+    public Text fuerzaText; // Texto para mostrar la fuerza actual del slider
 
     private List<GameObject> cargas = new List<GameObject>(); // Lista para almacenar las cargas
     private List<GameObject> sensores = new List<GameObject>(); // Lista para almacenar los sensores creados
+    private LineasPunteadas lineasPunteadas;
 
     private void Start()
     {
@@ -26,8 +31,30 @@ public class CargaPuntualManager : MonoBehaviour
         // Asignar funciones a los botones
         insertarCargaPositivaBtn.onClick.AddListener(IngresarCargaPositiva);
         insertarCargaNegativaBtn.onClick.AddListener(IngresarCargaNegativa);
-        botonSensor.onClick.AddListener(CrearSensor); // Nuevo botón para sensores
-        closeButton.onClick.AddListener(CerrarSubMenu); // Botón para cerrar el submenú
+        botonSensor.onClick.AddListener(CrearSensor);
+        closeButton.onClick.AddListener(CerrarSubMenu);
+        recalcularButton.onClick.AddListener(RecalcularLineasPunteadas); // Asignar la función de recalcular
+
+        // Asignar función al slider
+        fuerzaSlider.onValueChanged.AddListener(ActualizarTextoFuerza);
+
+        // Encontrar el texto hijo del slider e inicializarlo
+        fuerzaText = fuerzaSlider.GetComponentInChildren<Text>();
+        if (fuerzaText == null)
+        {
+            Debug.LogError("Text component not found inside the Slider.");
+            return;
+        }
+
+        ActualizarTextoFuerza(fuerzaSlider.value); // Actualizar el texto al inicio
+
+        // Inicializar LineasPunteadas
+        lineasPunteadas = GetComponent<LineasPunteadas>();
+        if (lineasPunteadas == null)
+        {
+            lineasPunteadas = gameObject.AddComponent<LineasPunteadas>();
+        }
+        lineasPunteadas.miniSpherePrefab = miniSpherePrefab;
     }
 
     private void Update()
@@ -36,6 +63,12 @@ public class CargaPuntualManager : MonoBehaviour
         foreach (var sensor in sensores)
         {
             ActualizarSensor(sensor);
+        }
+
+        // Actualizar la fuerza mostrada de todas las cargas
+        foreach (var carga in cargas)
+        {
+            ActualizarTextoFuerzaCarga(carga);
         }
     }
 
@@ -51,25 +84,34 @@ public class CargaPuntualManager : MonoBehaviour
 
     public void IngresarCargaPositiva()
     {
-        CrearCarga(cargaPositivaPrefab, 1.0f, true);
+        CrearCarga(cargaPositivaPrefab, fuerzaSlider.value, true);
     }
 
     public void IngresarCargaNegativa()
     {
-        CrearCarga(cargaNegativaPrefab, -1.0f, false);
+        CrearCarga(cargaNegativaPrefab, fuerzaSlider.value, false);
     }
 
     private void CrearCarga(GameObject cargaPrefab, float fuerza, bool esPositiva)
     {
+        Debug.Log($"Creando carga con fuerza: {fuerza}"); // Registro de valor de fuerza
         GameObject nuevaCarga = Instantiate(cargaPrefab, spawnPoint.position, spawnPoint.rotation);
         Carga cargaScript = nuevaCarga.AddComponent<Carga>();
         cargaScript.fuerza = fuerza;
         cargaScript.esPositiva = esPositiva;
         cargas.Add(nuevaCarga);
+
+        // Crear línea punteada hacia el sensor
+        if (sensores.Count > 0)
+        {
+            GameObject sensor = sensores[0]; // Usamos el primer sensor para las líneas punteadas
+            lineasPunteadas.CrearLineasPunteadas(nuevaCarga.transform.position, sensor.transform.position);
+        }
     }
 
     private void CrearSensor()
     {
+        Debug.Log("Creando sensor"); // Registro de creación de sensor
         GameObject nuevoSensor = Instantiate(indicadorFuerzaPrefab, spawnPoint.position, spawnPoint.rotation);
         IndicadorFuerza indicadorScript = nuevoSensor.AddComponent<IndicadorFuerza>();
         ActualizarSensor(nuevoSensor);
@@ -109,5 +151,47 @@ public class CargaPuntualManager : MonoBehaviour
             }
         }
         return fuerzaTotal;
+    }
+
+    private void ActualizarTextoFuerza(float nuevaFuerza)
+    {
+        if (fuerzaText != null)
+        {
+            fuerzaText.text = "Fuerza: " + nuevaFuerza.ToString("F2");
+        }
+        else
+        {
+            Debug.LogWarning("fuerzaText is null. Cannot update text.");
+        }
+    }
+
+    private void ActualizarTextoFuerzaCarga(GameObject carga)
+    {
+        var cargaScript = carga.GetComponent<Carga>();
+        var textComponent = carga.GetComponentInChildren<Text>();
+        if (cargaScript != null && textComponent != null)
+        {
+            textComponent.text = cargaScript.fuerza.ToString("F2");
+        }
+    }
+
+    private void RecalcularLineasPunteadas()
+    {
+        // Eliminar mini esferas existentes
+        GameObject[] existingSpheres = GameObject.FindGameObjectsWithTag("MiniSphere");
+        foreach (GameObject sphere in existingSpheres)
+        {
+            Destroy(sphere);
+        }
+
+        // Crear nuevas líneas punteadas para cada carga hacia el sensor
+        if (sensores.Count > 0)
+        {
+            GameObject sensor = sensores[0]; // Usamos el primer sensor para las líneas punteadas
+            foreach (var carga in cargas)
+            {
+                lineasPunteadas.CrearLineasPunteadas(carga.transform.position, sensor.transform.position);
+            }
+        }
     }
 }

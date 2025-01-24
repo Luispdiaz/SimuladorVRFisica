@@ -156,6 +156,7 @@ GameObject:
   - component: {fileID: 2384377611483748905}
   - component: {fileID: 3500410967838342167}
   - component: {fileID: 5633206453380839237}
+  - component: {fileID: 8871876677561544957}
   m_Layer: 0
   m_Name: '[BuildingBlock] carga positiva'
   m_TagString: Destructible
@@ -311,3 +312,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   esPositiva: 1
+  fuerza: 1
+--- !u!114 &8871876677561544957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8069956676135863939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 576cd2c504cbed8408d1315296ef1876, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
