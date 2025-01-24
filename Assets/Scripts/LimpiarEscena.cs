@@ -1,33 +1,13 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class ObjectCleaner : MonoBehaviour
+public class SceneReloader : MonoBehaviour
 {
-    public CargaPuntualManager cargaPuntualManager; // Referencia al script CargaPuntualManager
-
-    public void CleanUpScene()
+    public void ReloadScene()
     {
-        // Encuentra todos los objetos con la etiqueta "Destructible"
-        GameObject[] objectsToDestroy = GameObject.FindGameObjectsWithTag("Destructible");
-
-        // Destruye cada objeto encontrado
-        foreach (GameObject obj in objectsToDestroy)
-        {
-            Destroy(obj);
-        }
-
-        // Encuentra todos los objetos con la etiqueta "MiniSphere"
-        GameObject[] miniSpheresToDestroy = GameObject.FindGameObjectsWithTag("MiniSphere");
-
-        // Destruye cada mini esfera encontrada
-        foreach (GameObject miniSphere in miniSpheresToDestroy)
-        {
-            Destroy(miniSphere);
-        }
-
-        // Actualizar las referencias en CargaPuntualManager después de limpiar
-        if (cargaPuntualManager != null)
-        {
-            cargaPuntualManager.ActualizarReferencias();
-        }
+        // Obtener el nombre de la escena actual
+        string sceneName = SceneManager.GetActiveScene().name;
+        // Reiniciar la escena actual
+        SceneManager.LoadScene(sceneName);
     }
 }

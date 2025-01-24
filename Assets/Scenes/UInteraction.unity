@@ -15574,8 +15574,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2011342859}
-        m_TargetAssemblyTypeName: ObjectCleaner, Assembly-CSharp
-        m_MethodName: CleanUpScene
+        m_TargetAssemblyTypeName: SceneReloader, Assembly-CSharp
+        m_MethodName: ReloadScene
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
