@@ -1,16 +1,16 @@
 using UnityEngine;
-using UnityEngine.UI; // Aseg˙rate de importar este espacio de nombres
+using UnityEngine.UI; // Aseg√∫rate de importar este espacio de nombres
 using System.Collections.Generic;
 
 public class CargaPuntualManager : MonoBehaviour
 {
     // Referencias a UI y objetos
-    public GameObject subMenuCarga; // Panel del submen˙
-    public Button insertarCargaPositivaBtn; // BotÛn para insertar carga positiva
-    public Button insertarCargaNegativaBtn; // BotÛn para insertar carga negativa
-    public Button botonSensor; // BotÛn para crear sensores (indicadores de fuerza)
-    public Button closeButton; // BotÛn para cerrar el submen˙
-    public Transform spawnPoint; // Punto de apariciÛn de las cargas
+    public GameObject subMenuCarga; // Panel del submen√∫
+    public Button insertarCargaPositivaBtn; // Bot√≥n para insertar carga positiva
+    public Button insertarCargaNegativaBtn; // Bot√≥n para insertar carga negativa
+    public Button botonSensor; // Bot√≥n para crear sensores (indicadores de fuerza)
+    public Button closeButton; // Bot√≥n para cerrar el submen√∫
+    public Transform spawnPoint; // Punto de aparici√≥n de las cargas
     public GameObject cargaPositivaPrefab; // Prefab de la carga positiva
     public GameObject cargaNegativaPrefab; // Prefab de la carga negativa
     public GameObject indicadorFuerzaPrefab; // Prefab del indicador de fuerza
@@ -20,19 +20,19 @@ public class CargaPuntualManager : MonoBehaviour
 
     private void Start()
     {
-        // Ocultar el submen˙ al inicio
+        // Ocultar el submen√∫ al inicio
         subMenuCarga.SetActive(false);
 
         // Asignar funciones a los botones
         insertarCargaPositivaBtn.onClick.AddListener(IngresarCargaPositiva);
         insertarCargaNegativaBtn.onClick.AddListener(IngresarCargaNegativa);
-        botonSensor.onClick.AddListener(CrearSensor); // Nuevo botÛn para sensores
-        closeButton.onClick.AddListener(CerrarSubMenu); // BotÛn para cerrar el submen˙
+        botonSensor.onClick.AddListener(CrearSensor); // Nuevo bot√≥n para sensores
+        closeButton.onClick.AddListener(CerrarSubMenu); // Bot√≥n para cerrar el submen√∫
     }
 
     private void Update()
     {
-        // Actualizar la direcciÛn y rotaciÛn de todos los sensores
+        // Actualizar la direcci√≥n y rotaci√≥n de todos los sensores
         foreach (var sensor in sensores)
         {
             ActualizarSensor(sensor);
@@ -96,9 +96,14 @@ public class CargaPuntualManager : MonoBehaviour
             {
                 Vector3 direccion = posicionSensor - carga.transform.position;
                 float distancia = direccion.magnitude;
-                if (distancia > 0.01f) // Evitar divisiÛn por cero
+                if (distancia > 0.01f) // Evitar divisi√≥n por cero
                 {
-                    Vector3 fuerza = (cargaScript.fuerza / Mathf.Pow(distancia, 2)) * direccion.normalized;
+                    float fuerzaMagnitud = cargaScript.fuerza / Mathf.Pow(distancia, 2);
+                    if (!cargaScript.esPositiva)
+                    {
+                        fuerzaMagnitud = -fuerzaMagnitud; // Invertir la fuerza para cargas negativas
+                    }
+                    Vector3 fuerza = fuerzaMagnitud * direccion.normalized;
                     fuerzaTotal += fuerza;
                 }
             }
