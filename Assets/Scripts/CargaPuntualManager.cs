@@ -100,13 +100,6 @@ public class CargaPuntualManager : MonoBehaviour
         cargaScript.fuerza = fuerza;
         cargaScript.esPositiva = esPositiva;
         cargas.Add(nuevaCarga);
-
-        // Crear línea punteada hacia el sensor
-        if (sensores.Count > 0)
-        {
-            GameObject sensor = sensores[0]; // Usamos el primer sensor para las líneas punteadas
-            lineasPunteadas.CrearLineasPunteadas(nuevaCarga.transform.position, sensor.transform.position);
-        }
     }
 
     private void CrearSensor()
@@ -175,6 +168,17 @@ public class CargaPuntualManager : MonoBehaviour
         }
     }
 
+    public void ActualizarReferencias()
+    {
+        // Actualizar las listas de cargas y sensores
+        cargas.Clear();
+        sensores.Clear();
+
+        // Encontrar todas las cargas y sensores en la escena
+        cargas.AddRange(GameObject.FindGameObjectsWithTag("Destructible"));
+        sensores.AddRange(GameObject.FindGameObjectsWithTag("Sensor"));
+    }
+
     private void RecalcularLineasPunteadas()
     {
         // Eliminar mini esferas existentes
@@ -184,10 +188,9 @@ public class CargaPuntualManager : MonoBehaviour
             Destroy(sphere);
         }
 
-        // Crear nuevas líneas punteadas para cada carga hacia el sensor
-        if (sensores.Count > 0)
+        // Crear nuevas líneas punteadas para cada carga hacia todos los sensores
+        foreach (var sensor in sensores)
         {
-            GameObject sensor = sensores[0]; // Usamos el primer sensor para las líneas punteadas
             foreach (var carga in cargas)
             {
                 lineasPunteadas.CrearLineasPunteadas(carga.transform.position, sensor.transform.position);
