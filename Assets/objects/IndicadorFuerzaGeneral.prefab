@@ -481,7 +481,7 @@ GameObject:
   - component: {fileID: -5995522370990213743}
   - component: {fileID: 1350816939557007268}
   m_Layer: 0
-  m_Name: IndicadorFuerza
+  m_Name: IndicadorFuerzaGeneral
   m_TagString: Destructible
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

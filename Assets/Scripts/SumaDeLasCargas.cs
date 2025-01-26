@@ -12,15 +12,23 @@ public class SumaDeLasCargasManager : MonoBehaviour
 
     void Start()
     {
-        // Buscar el objeto IndicadorFuerza en la escena
-        indicadorFuerza = Object.FindFirstObjectByType<IndicadorFuerza>();
-        if (indicadorFuerza != null)
+        // Buscar el objeto IndicadorFuerza por nombre en la escena
+        GameObject objetoIndicadorFuerza = GameObject.Find("IndicadorFuerzaGeneral");
+        if (objetoIndicadorFuerza != null)
         {
-            Debug.Log("IndicadorFuerza encontrado.");
+            indicadorFuerza = objetoIndicadorFuerza.GetComponent<IndicadorFuerza>();
+            if (indicadorFuerza != null)
+            {
+                Debug.Log("IndicadorFuerza encontrado.");
+            }
+            else
+            {
+                Debug.LogError("El objeto IndicadorFuerzaGeneral no tiene el script IndicadorFuerza.");
+            }
         }
         else
         {
-            Debug.LogError("No se encontró un objeto IndicadorFuerza en la escena.");
+            Debug.LogError("No se encontró el objeto IndicadorFuerzaGeneral en la escena.");
         }
 
         if (botonSumaCargas != null)
