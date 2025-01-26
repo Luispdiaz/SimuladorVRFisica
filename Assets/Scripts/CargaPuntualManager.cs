@@ -23,6 +23,8 @@ public class CargaPuntualManager : MonoBehaviour
     private List<GameObject> sensores = new List<GameObject>(); // Lista para almacenar los sensores creados
     private LineasPunteadas lineasPunteadas;
 
+    public SumaDeLasCargasManager sumaDeLasCargasManager; // Nueva referencia al SumaDeLasCargasManager
+
     private void Start()
     {
         // Ocultar el submenú al inicio
@@ -104,11 +106,17 @@ public class CargaPuntualManager : MonoBehaviour
 
     private void CrearSensor()
     {
-        Debug.Log("Creando sensor"); // Registro de creación de sensor
+        Debug.Log("Creando sensor");
         GameObject nuevoSensor = Instantiate(indicadorFuerzaPrefab, spawnPoint.position, spawnPoint.rotation);
         IndicadorFuerza indicadorScript = nuevoSensor.AddComponent<IndicadorFuerza>();
         ActualizarSensor(nuevoSensor);
         sensores.Add(nuevoSensor);
+
+        // Notificar al SumaDeLasCargasManager
+        if (sumaDeLasCargasManager != null)
+        {
+            sumaDeLasCargasManager.RegistrarIndicadorFuerza(indicadorScript);
+        }
     }
 
     private void ActualizarSensor(GameObject sensor)
