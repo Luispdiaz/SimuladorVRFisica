@@ -25,12 +25,19 @@ public class SumaDeLasCargasManager : MonoBehaviour
 
         if (botonSumaCargas != null)
         {
+            Debug.Log("Asignando evento de clic al botón.");
             botonSumaCargas.onClick.AddListener(CalcularSumaCargas);
+        }
+        else
+        {
+            Debug.LogError("No se encontró el botón Suma de las cargas.");
         }
     }
 
     void CalcularSumaCargas()
     {
+        Debug.Log("Botón Suma de las cargas presionado.");
+
         if (indicadorFuerza == null)
         {
             Debug.LogError("No se encontró un objeto IndicadorFuerza en la escena.");
