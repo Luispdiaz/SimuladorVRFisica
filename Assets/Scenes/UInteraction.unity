@@ -419,10 +419,8 @@ MonoBehaviour:
   _rayInteractor: {fileID: 856379567}
   _skinnedMeshRenderer: {fileID: 837432946}
   _remapCurve:
-    serializedVersion: 2
     m_Curve:
-    - serializedVersion: 3
-      time: 0
+    - time: 0
       value: 0
       inSlope: 0
       outSlope: 0
@@ -430,8 +428,7 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
-    - serializedVersion: 3
-      time: 1
+    - time: 1
       value: 1
       inSlope: 0
       outSlope: 0
@@ -443,6 +440,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   _alphaRange: {x: 0.1, y: 0.4}
+  _started: 0
 --- !u!1 &61463711
 GameObject:
   m_ObjectHideFlags: 0
@@ -873,6 +871,8 @@ MonoBehaviour:
   _hand: {fileID: 1033410834}
   _pokeInteractor: {fileID: 1033410833}
   _syntheticHand: {fileID: 0}
+  _isTouching: 0
+  _started: 0
 --- !u!1 &135028740
 GameObject:
   m_ObjectHideFlags: 0
@@ -1773,11 +1773,17 @@ MonoBehaviour:
   _handVisual: {fileID: 0}
   _handRenderer: {fileID: 0}
   _materialEditor: {fileID: 0}
-  _glowColor: {r: 1, g: 1, b: 1, a: 0}
+  _glowColor:
+    r: 1
+    g: 1
+    b: 1
+    a: 0
   _overshootMaxDistance: 0.15
   _pokeFinger: 1
   _maxGradientLength: 0.9
   _glowType: 31
+  _glowEnabled: 0
+  _started: 0
 --- !u!1 &190197214
 GameObject:
   m_ObjectHideFlags: 0
@@ -1824,6 +1830,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _hand: {fileID: 1476939469}
   _offset: {x: 0, y: 0, z: 0}
+  _started: 0
 --- !u!1 &197186175
 GameObject:
   m_ObjectHideFlags: 0
@@ -2292,10 +2299,20 @@ MonoBehaviour:
   _rayInteractor: {fileID: 1476939466}
   _cursor: {fileID: 46968434}
   _renderer: {fileID: 953048171}
-  _outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  _outlineColor:
+    r: 0
+    g: 0
+    b: 0
+    a: 1
   _offsetAlongNormal: 0.005
   _playerHead: {fileID: 0}
+  _startScale: {x: 0, y: 0, z: 0}
+  _shaderRadialGradientScale: 860
+  _shaderRadialGradientIntensity: 859
+  _shaderRadialGradientBackgroundOpacity: 861
+  _shaderOutlineColor: 492
   _selectObject: {fileID: 1206592301}
+  _started: 0
 --- !u!1 &281153888
 GameObject:
   m_ObjectHideFlags: 0
@@ -2835,10 +2852,10 @@ RectTransform:
   - {fileID: 2119878517}
   m_Father: {fileID: 2120070624}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 35}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 125, y: -362}
+  m_SizeDelta: {x: 210, y: 35}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &371615787
 MonoBehaviour:
@@ -3170,10 +3187,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 2120070624}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 50}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 125, y: -48.5}
+  m_SizeDelta: {x: 210, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &412123540
 MonoBehaviour:
@@ -3998,6 +4015,12 @@ MonoBehaviour:
   _confidenceBehavior: 1
   _systemGestureBehavior: 1
   _systemGestureMaterial: {fileID: 2100000, guid: 9d107f2f043e1ed408b970f146718017, type: 2}
+  _originalMaterial: {fileID: 0}
+  _skinnedMeshRenderer: {fileID: 0}
+  <IsInitialized>k__BackingField: 0
+  <IsDataValid>k__BackingField: 0
+  <IsDataHighConfidence>k__BackingField: 0
+  <ShouldUseSystemGestureMaterial>k__BackingField: 0
 --- !u!114 &470034697
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4011,6 +4034,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _meshType: 5
+  _loadedMeshType: -1
+  _mesh: {fileID: 0}
+  <IsInitialized>k__BackingField: 0
 --- !u!114 &470034698
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4027,8 +4053,18 @@ MonoBehaviour:
   _systemGestureBehavior: 1
   _renderPhysicsCapsules: 0
   _skeletonMaterial: {fileID: 2100000, guid: 9c05c5a6e4902ff4082cfb34e5b64b2d, type: 2}
+  _skeletonDefaultMaterial: {fileID: 0}
   _capsuleMaterial: {fileID: 0}
+  _capsuleDefaultMaterial: {fileID: 0}
   _systemGestureMaterial: {fileID: 2100000, guid: 38beab19e7c1f7947afac78fd60f90b0, type: 2}
+  _systemGestureDefaultMaterial: {fileID: 0}
+  _ovrSkeleton: {fileID: 0}
+  _skeletonGO: {fileID: 0}
+  _scale: 0
+  <IsInitialized>k__BackingField: 0
+  <IsDataValid>k__BackingField: 0
+  <IsDataHighConfidence>k__BackingField: 0
+  <ShouldUseSystemGestureMaterial>k__BackingField: 0
 --- !u!114 &470034699
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4046,6 +4082,13 @@ MonoBehaviour:
   _updateRootScale: 1
   _enablePhysicsCapsules: 0
   _applyBoneTranslations: 1
+  _bonesGO: {fileID: 0}
+  _bindPosesGO: {fileID: 0}
+  _capsulesGO: {fileID: 0}
+  <IsInitialized>k__BackingField: 0
+  <IsDataValid>k__BackingField: 0
+  <IsDataHighConfidence>k__BackingField: 0
+  <SkeletonChangedCount>k__BackingField: 0
 --- !u!114 &470034700
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4062,6 +4105,17 @@ MonoBehaviour:
   _pointerPoseRoot: {fileID: 0}
   m_showState: 3
   RayHelper: {fileID: 0}
+  _pointerPoseGO: {fileID: 0}
+  _wasIndexPinching: 0
+  _wasReleased: 0
+  <IsDataValid>k__BackingField: 0
+  <IsDataHighConfidence>k__BackingField: 0
+  <IsTracked>k__BackingField: 0
+  <IsSystemGestureInProgress>k__BackingField: 0
+  <IsPointerPoseValid>k__BackingField: 0
+  <HandScale>k__BackingField: 0
+  <HandConfidence>k__BackingField: 0
+  <IsDominantHand>k__BackingField: 0
 --- !u!114 &470034701
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4336,10 +4390,20 @@ MonoBehaviour:
   _rayInteractor: {fileID: 856379567}
   _cursor: {fileID: 150344054}
   _renderer: {fileID: 439682669}
-  _outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  _outlineColor:
+    r: 0
+    g: 0
+    b: 0
+    a: 1
   _offsetAlongNormal: 0.005
   _playerHead: {fileID: 0}
+  _startScale: {x: 0, y: 0, z: 0}
+  _shaderRadialGradientScale: 860
+  _shaderRadialGradientIntensity: 859
+  _shaderRadialGradientBackgroundOpacity: 861
+  _shaderOutlineColor: 492
   _selectObject: {fileID: 1563306713}
+  _started: 0
 --- !u!1 &505065330
 GameObject:
   m_ObjectHideFlags: 0
@@ -4994,8 +5058,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SendPointerHoverToParent: 1
+  m_EventSystem: {fileID: 0}
+  m_InputOverride: {fileID: 0}
+  m_DefaultInput: {fileID: 0}
   _useInitialPressPositionForDrag: 1
   _exclusiveMode: 1
+  _pointerEventCamera: {fileID: 0}
+  _inputModules: []
+  _started: 0
 --- !u!1 &575518804
 GameObject:
   m_ObjectHideFlags: 0
@@ -5395,6 +5465,8 @@ MonoBehaviour:
   _hand: {fileID: 1889920867}
   _pokeInteractor: {fileID: 1889920866}
   _syntheticHand: {fileID: 0}
+  _isTouching: 0
+  _started: 0
 --- !u!1 &668028369
 GameObject:
   m_ObjectHideFlags: 0
@@ -6543,10 +6615,10 @@ RectTransform:
   - {fileID: 676022859}
   m_Father: {fileID: 2120070624}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 35}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 125, y: -158}
+  m_SizeDelta: {x: 210, y: 35}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &807978848
 MonoBehaviour:
@@ -6798,6 +6870,10 @@ MonoBehaviour:
   _freezeRotationX: 0
   _freezeRotationY: 0
   _freezeRotationZ: 0
+  _cachedPose:
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+  _started: 0
 --- !u!1 &847103134
 GameObject:
   m_ObjectHideFlags: 0
@@ -6938,15 +7014,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4733c5f009d26ad49b3685117b8d3eb4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _nativeId: 5282254251404903456
   _activeState: {fileID: 856379568}
   _interactableFilters: []
   _candidateTiebreaker: {fileID: 0}
+  _clearComputeCandidateOverrideOnSelect: 0
+  _clearComputeShouldSelectOverrideOnSelect: 0
+  _clearComputeShouldUnselectOverrideOnUnselect: 0
+  _state: 3
   _maxIterationsPerFrame: 1
+  _candidate: {fileID: 0}
+  _interactable: {fileID: 0}
+  _selectedInteractable: {fileID: 0}
   _data: {fileID: 0}
+  _started: 0
+  <IsRootDriver>k__BackingField: 1
   _selector: {fileID: 1204437735}
   _rayOrigin: {fileID: 2067611040}
   _maxRayLength: 5
   _equalDistanceThreshold: 0.001
+  _movementHitDelta:
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+  <Origin>k__BackingField: {x: 0, y: 0, z: 0}
+  <Rotation>k__BackingField: {x: 0, y: 0, z: 0, w: 0}
+  <Forward>k__BackingField: {x: 0, y: 0, z: 0}
+  <End>k__BackingField: {x: 0, y: 0, z: 0}
 --- !u!114 &856379568
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7007,6 +7100,7 @@ MonoBehaviour:
   _gameObjects: []
   _monoBehaviours:
   - {fileID: 856379567}
+  _active: 0
 --- !u!114 &856379572
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7191,6 +7285,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cuboPrefab: {fileID: 8069956676135863939, guid: 02c389e4281839c42b1742cff1a5c103, type: 3}
   spawnPoint: {fileID: 365591358}
+  objetosInstanciados: []
 --- !u!1 &893838613
 GameObject:
   m_ObjectHideFlags: 0
@@ -7657,11 +7752,17 @@ MonoBehaviour:
   _handVisual: {fileID: 0}
   _handRenderer: {fileID: 0}
   _materialEditor: {fileID: 0}
-  _glowColor: {r: 1, g: 1, b: 1, a: 0}
+  _glowColor:
+    r: 1
+    g: 1
+    b: 1
+    a: 0
   _overshootMaxDistance: 0.15
   _pokeFinger: 1
   _maxGradientLength: 0.9
   _glowType: 31
+  _glowEnabled: 0
+  _started: 0
 --- !u!114 &907940837
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8488,15 +8589,96 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d952c175ec3c6554199fd744548ce50a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _nativeId: 5282254251404903456
   _activeState: {fileID: 1033410834}
   _interactableFilters: []
   _candidateTiebreaker: {fileID: 0}
+  _clearComputeCandidateOverrideOnSelect: 0
+  _clearComputeShouldSelectOverrideOnSelect: 0
+  _clearComputeShouldUnselectOverrideOnUnselect: 0
+  _state: 3
   _maxIterationsPerFrame: 3
+  _candidate: {fileID: 0}
+  _interactable: {fileID: 0}
+  _selectedInteractable: {fileID: 0}
   _data: {fileID: 0}
+  _started: 0
+  <IsRootDriver>k__BackingField: 1
   _pointTransform: {fileID: 839116602}
   _radius: 0.005
   _touchReleaseThreshold: 0.002
   _equalDistanceThreshold: 0.001
+  <ClosestPoint>k__BackingField: {x: 0, y: 0, z: 0}
+  <TouchPoint>k__BackingField: {x: 0, y: 0, z: 0}
+  <TouchNormal>k__BackingField: {x: 0, y: 0, z: 0}
+  <Origin>k__BackingField: {x: 0, y: 0, z: 0}
+  _previousPokeOrigin: {x: 0, y: 0, z: 0}
+  _previousCandidate: {fileID: 0}
+  _hitInteractable: {fileID: 0}
+  _recoilInteractable: {fileID: 0}
+  _previousSurfacePointLocal: {x: 0, y: 0, z: 0}
+  _firstTouchPointLocal: {x: 0, y: 0, z: 0}
+  _targetTouchPointLocal: {x: 0, y: 0, z: 0}
+  _easeTouchPointLocal: {x: 0, y: 0, z: 0}
+  _isRecoiled: 0
+  _isDragging: 0
+  _dragEaseCurve:
+    _animationCurve:
+      m_Curve:
+      - time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _animationLength: 1
+    _animationStartTime: 0
+  _pinningResyncCurve:
+    _animationCurve:
+      m_Curve:
+      - time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _animationLength: 1
+    _animationStartTime: 0
+  _dragCompareSurfacePointLocal: {x: 0, y: 0, z: 0}
+  _maxDistanceFromFirstTouchPoint: 0
+  _recoilVelocityExpansion: 0
+  _selectMaxDepth: 0
+  _reEnterDepth: 0
+  _lastUpdateTime: 0
+  _isPassedSurface: 0
+  _previousDragCurveProgress: 0
+  _previousPinningCurveProgress: 0
 --- !u!114 &1033410834
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8526,6 +8708,7 @@ MonoBehaviour:
   _includeChildrenAsDependents: 1
   _gameObjects: []
   _monoBehaviours: []
+  _active: 0
 --- !u!114 &1033410836
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8889,6 +9072,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _hand: {fileID: 1476939469}
+  _isIndexFingerPinching: 0
+  _started: 0
 --- !u!4 &1096442478
 Transform:
   m_ObjectHideFlags: 0
@@ -9077,10 +9262,10 @@ RectTransform:
   - {fileID: 546596882}
   m_Father: {fileID: 2120070624}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 35}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 125, y: -260}
+  m_SizeDelta: {x: 210, y: 35}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1112825480
 MonoBehaviour:
@@ -9413,7 +9598,13 @@ MonoBehaviour:
   _transferOnSecondSelection: 0
   _addNewPointsToFront: 0
   _forwardElement: {fileID: 0}
+  _points: []
+  _pointIds: 
+  _selectingPoints: []
+  _selectingPointIds: 
+  _started: 0
   _canvas: {fileID: 1951702234}
+  _registered: 0
 --- !u!114 &1139106963
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9430,6 +9621,8 @@ MonoBehaviour:
   _maxInteractors: -1
   _maxSelectingInteractors: -1
   _data: {fileID: 0}
+  _started: 0
+  _state: 3
   _pointableElement: {fileID: 1139106962}
   _surface: {fileID: 1350946833}
   _selectSurface: {fileID: 1350946834}
@@ -9484,10 +9677,8 @@ MonoBehaviour:
   _rayInteractor: {fileID: 1476939466}
   _skinnedMeshRenderer: {fileID: 242966067}
   _remapCurve:
-    serializedVersion: 2
     m_Curve:
-    - serializedVersion: 3
-      time: 0
+    - time: 0
       value: 0
       inSlope: 0
       outSlope: 0
@@ -9495,8 +9686,7 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
-    - serializedVersion: 3
-      time: 1
+    - time: 1
       value: 1
       inSlope: 0
       outSlope: 0
@@ -9508,6 +9698,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   _alphaRange: {x: 0.1, y: 0.4}
+  _started: 0
 --- !u!1 &1151778590
 GameObject:
   m_ObjectHideFlags: 0
@@ -9733,6 +9924,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _hand: {fileID: 856379570}
+  _isIndexFingerPinching: 0
+  _started: 0
 --- !u!4 &1204437736
 Transform:
   m_ObjectHideFlags: 0
@@ -10342,7 +10535,17 @@ MonoBehaviour:
   m_controller: 2
   m_showState: 1
   showWhenHandsArePoweredByNaturalControllerPoses: 0
+  m_animator: {fileID: 0}
   RayHelper: {fileID: 0}
+  m_activeController: {fileID: 0}
+  m_controllerModelsInitialized: 0
+  m_hasInputFocus: 1
+  m_hasInputFocusPrev: 0
+  m_isActive: 0
+  activeControllerType: 2
+  m_prevControllerConnected: 0
+  m_prevControllerConnectedCached: 0
+  m_prevControllerInHandState: 0
 --- !u!114 &1282869789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11959,6 +12162,12 @@ MonoBehaviour:
   _confidenceBehavior: 1
   _systemGestureBehavior: 1
   _systemGestureMaterial: {fileID: 2100000, guid: 9d107f2f043e1ed408b970f146718017, type: 2}
+  _originalMaterial: {fileID: 0}
+  _skinnedMeshRenderer: {fileID: 0}
+  <IsInitialized>k__BackingField: 0
+  <IsDataValid>k__BackingField: 0
+  <IsDataHighConfidence>k__BackingField: 0
+  <ShouldUseSystemGestureMaterial>k__BackingField: 0
 --- !u!114 &1474678285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11972,6 +12181,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _meshType: 4
+  _loadedMeshType: -1
+  _mesh: {fileID: 0}
+  <IsInitialized>k__BackingField: 0
 --- !u!114 &1474678286
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11988,8 +12200,18 @@ MonoBehaviour:
   _systemGestureBehavior: 1
   _renderPhysicsCapsules: 0
   _skeletonMaterial: {fileID: 2100000, guid: 9c05c5a6e4902ff4082cfb34e5b64b2d, type: 2}
+  _skeletonDefaultMaterial: {fileID: 0}
   _capsuleMaterial: {fileID: 0}
+  _capsuleDefaultMaterial: {fileID: 0}
   _systemGestureMaterial: {fileID: 2100000, guid: 38beab19e7c1f7947afac78fd60f90b0, type: 2}
+  _systemGestureDefaultMaterial: {fileID: 0}
+  _ovrSkeleton: {fileID: 0}
+  _skeletonGO: {fileID: 0}
+  _scale: 0
+  <IsInitialized>k__BackingField: 0
+  <IsDataValid>k__BackingField: 0
+  <IsDataHighConfidence>k__BackingField: 0
+  <ShouldUseSystemGestureMaterial>k__BackingField: 0
 --- !u!114 &1474678287
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12007,6 +12229,13 @@ MonoBehaviour:
   _updateRootScale: 1
   _enablePhysicsCapsules: 0
   _applyBoneTranslations: 1
+  _bonesGO: {fileID: 0}
+  _bindPosesGO: {fileID: 0}
+  _capsulesGO: {fileID: 0}
+  <IsInitialized>k__BackingField: 0
+  <IsDataValid>k__BackingField: 0
+  <IsDataHighConfidence>k__BackingField: 0
+  <SkeletonChangedCount>k__BackingField: 0
 --- !u!114 &1474678288
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12023,6 +12252,17 @@ MonoBehaviour:
   _pointerPoseRoot: {fileID: 0}
   m_showState: 3
   RayHelper: {fileID: 0}
+  _pointerPoseGO: {fileID: 0}
+  _wasIndexPinching: 0
+  _wasReleased: 0
+  <IsDataValid>k__BackingField: 0
+  <IsDataHighConfidence>k__BackingField: 0
+  <IsTracked>k__BackingField: 0
+  <IsSystemGestureInProgress>k__BackingField: 0
+  <IsPointerPoseValid>k__BackingField: 0
+  <HandScale>k__BackingField: 0
+  <HandConfidence>k__BackingField: 0
+  <IsDominantHand>k__BackingField: 0
 --- !u!114 &1474678289
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12093,15 +12333,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4733c5f009d26ad49b3685117b8d3eb4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _nativeId: 5282254251404903456
   _activeState: {fileID: 1476939467}
   _interactableFilters: []
   _candidateTiebreaker: {fileID: 0}
+  _clearComputeCandidateOverrideOnSelect: 0
+  _clearComputeShouldSelectOverrideOnSelect: 0
+  _clearComputeShouldUnselectOverrideOnUnselect: 0
+  _state: 3
   _maxIterationsPerFrame: 1
+  _candidate: {fileID: 0}
+  _interactable: {fileID: 0}
+  _selectedInteractable: {fileID: 0}
   _data: {fileID: 0}
+  _started: 0
+  <IsRootDriver>k__BackingField: 1
   _selector: {fileID: 1096442477}
   _rayOrigin: {fileID: 190197215}
   _maxRayLength: 5
   _equalDistanceThreshold: 0.001
+  _movementHitDelta:
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+  <Origin>k__BackingField: {x: 0, y: 0, z: 0}
+  <Rotation>k__BackingField: {x: 0, y: 0, z: 0, w: 0}
+  <Forward>k__BackingField: {x: 0, y: 0, z: 0}
+  <End>k__BackingField: {x: 0, y: 0, z: 0}
 --- !u!114 &1476939467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12162,6 +12419,7 @@ MonoBehaviour:
   _gameObjects: []
   _monoBehaviours:
   - {fileID: 1476939466}
+  _active: 0
 --- !u!114 &1476939471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14164,6 +14422,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   indicadorFuerzaPrefab: {fileID: 0}
   spawnPoint: {fileID: 0}
+  contadorSensores: 0
 --- !u!1 &1854699948
 GameObject:
   m_ObjectHideFlags: 0
@@ -14391,8 +14650,14 @@ MonoBehaviour:
   _hand: {fileID: 1476939469}
   _rayInteractor: {fileID: 1476939466}
   _materialEditor: {fileID: 0}
-  _glowColor: {r: 1, g: 1, b: 1, a: 0}
+  _glowColor:
+    r: 1
+    g: 1
+    b: 1
+    a: 0
   _glowType: 18
+  _glowEnabled: 0
+  _started: 0
 --- !u!1 &1887511193
 GameObject:
   m_ObjectHideFlags: 0
@@ -14473,15 +14738,96 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d952c175ec3c6554199fd744548ce50a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _nativeId: 5282254251404903456
   _activeState: {fileID: 1889920867}
   _interactableFilters: []
   _candidateTiebreaker: {fileID: 0}
+  _clearComputeCandidateOverrideOnSelect: 0
+  _clearComputeShouldSelectOverrideOnSelect: 0
+  _clearComputeShouldUnselectOverrideOnUnselect: 0
+  _state: 3
   _maxIterationsPerFrame: 3
+  _candidate: {fileID: 0}
+  _interactable: {fileID: 0}
+  _selectedInteractable: {fileID: 0}
   _data: {fileID: 0}
+  _started: 0
+  <IsRootDriver>k__BackingField: 1
   _pointTransform: {fileID: 1931240485}
   _radius: 0.005
   _touchReleaseThreshold: 0.002
   _equalDistanceThreshold: 0.001
+  <ClosestPoint>k__BackingField: {x: 0, y: 0, z: 0}
+  <TouchPoint>k__BackingField: {x: 0, y: 0, z: 0}
+  <TouchNormal>k__BackingField: {x: 0, y: 0, z: 0}
+  <Origin>k__BackingField: {x: 0, y: 0, z: 0}
+  _previousPokeOrigin: {x: 0, y: 0, z: 0}
+  _previousCandidate: {fileID: 0}
+  _hitInteractable: {fileID: 0}
+  _recoilInteractable: {fileID: 0}
+  _previousSurfacePointLocal: {x: 0, y: 0, z: 0}
+  _firstTouchPointLocal: {x: 0, y: 0, z: 0}
+  _targetTouchPointLocal: {x: 0, y: 0, z: 0}
+  _easeTouchPointLocal: {x: 0, y: 0, z: 0}
+  _isRecoiled: 0
+  _isDragging: 0
+  _dragEaseCurve:
+    _animationCurve:
+      m_Curve:
+      - time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _animationLength: 1
+    _animationStartTime: 0
+  _pinningResyncCurve:
+    _animationCurve:
+      m_Curve:
+      - time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _animationLength: 1
+    _animationStartTime: 0
+  _dragCompareSurfacePointLocal: {x: 0, y: 0, z: 0}
+  _maxDistanceFromFirstTouchPoint: 0
+  _recoilVelocityExpansion: 0
+  _selectMaxDepth: 0
+  _reEnterDepth: 0
+  _lastUpdateTime: 0
+  _isPassedSurface: 0
+  _previousDragCurveProgress: 0
+  _previousPinningCurveProgress: 0
 --- !u!114 &1889920867
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14511,6 +14857,7 @@ MonoBehaviour:
   _includeChildrenAsDependents: 1
   _gameObjects: []
   _monoBehaviours: []
+  _active: 0
 --- !u!114 &1889920869
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15042,6 +15389,10 @@ MonoBehaviour:
   _freezeRotationX: 0
   _freezeRotationY: 0
   _freezeRotationZ: 0
+  _cachedPose:
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+  _started: 0
 --- !u!1 &1937339321
 GameObject:
   m_ObjectHideFlags: 0
@@ -15248,7 +15599,13 @@ MonoBehaviour:
   _transferOnSecondSelection: 0
   _addNewPointsToFront: 0
   _forwardElement: {fileID: 0}
+  _points: []
+  _pointIds: 
+  _selectingPoints: []
+  _selectingPointIds: 
+  _started: 0
   _canvas: {fileID: 1951702234}
+  _registered: 0
 --- !u!114 &1943686101
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15265,6 +15622,8 @@ MonoBehaviour:
   _maxInteractors: -1
   _maxSelectingInteractors: -1
   _data: {fileID: 0}
+  _started: 0
+  _state: 3
   _pointableElement: {fileID: 1943686100}
   _surfacePatch: {fileID: 150102577}
   _enterHoverNormal: 0.03
@@ -15282,10 +15641,8 @@ MonoBehaviour:
     DragTangent: 0.01
     DragEaseCurve:
       _animationCurve:
-        serializedVersion: 2
         m_Curve:
-        - serializedVersion: 3
-          time: 0
+        - time: 0
           value: 0
           inSlope: 0
           outSlope: 0
@@ -15293,8 +15650,7 @@ MonoBehaviour:
           weightedMode: 0
           inWeight: 0
           outWeight: 0
-        - serializedVersion: 3
-          time: 1
+        - time: 1
           value: 1
           inSlope: 0
           outSlope: 0
@@ -15306,14 +15662,13 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 4
       _animationLength: 0.05
+      _animationStartTime: 0
   _positionPinning:
     Enabled: 1
     MaxPinDistance: 0.075
     PinningEaseCurve:
-      serializedVersion: 2
       m_Curve:
-      - serializedVersion: 3
-        time: 0.2
+      - time: 0.2
         value: 0
         inSlope: 0
         outSlope: 0
@@ -15321,8 +15676,7 @@ MonoBehaviour:
         weightedMode: 0
         inWeight: 0
         outWeight: 0
-      - serializedVersion: 3
-        time: 1
+      - time: 1
         value: 1
         inSlope: 0
         outSlope: 0
@@ -15335,10 +15689,8 @@ MonoBehaviour:
       m_RotationOrder: 4
     ResyncCurve:
       _animationCurve:
-        serializedVersion: 2
         m_Curve:
-        - serializedVersion: 3
-          time: 0
+        - time: 0
           value: 0
           inSlope: 0
           outSlope: 0
@@ -15346,8 +15698,7 @@ MonoBehaviour:
           weightedMode: 0
           inWeight: 0
           outWeight: 0
-        - serializedVersion: 3
-          time: 1
+        - time: 1
           value: 1
           inSlope: 0
           outSlope: 0
@@ -15359,14 +15710,13 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 4
       _animationLength: 0.2
+      _animationStartTime: 0
   _recoilAssist:
     Enabled: 1
     UseDynamicDecay: 1
     DynamicDecayCurve:
-      serializedVersion: 2
       m_Curve:
-      - serializedVersion: 3
-        time: 0
+      - time: 0
         value: 50
         inSlope: 0
         outSlope: 0
@@ -15374,8 +15724,7 @@ MonoBehaviour:
         weightedMode: 0
         inWeight: 0
         outWeight: 0
-      - serializedVersion: 3
-        time: 0.9
+      - time: 0.9
         value: 0.5
         inSlope: -47
         outSlope: -47
@@ -15630,7 +15979,17 @@ MonoBehaviour:
   m_controller: 1
   m_showState: 1
   showWhenHandsArePoweredByNaturalControllerPoses: 0
+  m_animator: {fileID: 0}
   RayHelper: {fileID: 0}
+  m_activeController: {fileID: 0}
+  m_controllerModelsInitialized: 0
+  m_hasInputFocus: 1
+  m_hasInputFocusPrev: 0
+  m_isActive: 0
+  activeControllerType: 2
+  m_prevControllerConnected: 0
+  m_prevControllerConnectedCached: 0
+  m_prevControllerInHandState: 0
 --- !u!114 &1977798223
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15772,10 +16131,10 @@ RectTransform:
   - {fileID: 146261611}
   m_Father: {fileID: 2120070624}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 30}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 125, y: -461.5}
+  m_SizeDelta: {x: 210, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2011342855
 MonoBehaviour:
@@ -16325,6 +16684,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _hand: {fileID: 856379570}
   _offset: {x: 0, y: 0, z: 0}
+  _started: 0
 --- !u!1 &2068821738
 GameObject:
   m_ObjectHideFlags: 0
@@ -17066,6 +17426,9 @@ MonoBehaviour:
   miniSpherePrefab: {fileID: 2877251215816945538, guid: 43abdaae7fc194f4e8186551e8c5c54d, type: 3}
   fuerzaSlider: {fileID: 1530457432}
   fuerzaText: {fileID: 86921985}
+  cargas: []
+  sensores: []
+  lineasPunteadas: {fileID: 0}
 --- !u!114 &2136638487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17094,7 +17457,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   botonSumaCargas: {fileID: 65384162}
   prefabIndicadorFuerzaIndividual: {fileID: 8848935907765805432, guid: e5f7f7f56d6d7444e810aa26ceaa770f, type: 3}
-  posicionSensor: {fileID: 365591358}
+  posicionSensor: {fileID: 2323276197015448892, guid: 8a76fff777b084240988f78097ba63a8, type: 3}
+  indicadoresFuerzaIndividuales: []
 --- !u!1 &2138702807
 GameObject:
   m_ObjectHideFlags: 0
@@ -17505,8 +17869,14 @@ MonoBehaviour:
   _hand: {fileID: 856379570}
   _rayInteractor: {fileID: 856379567}
   _materialEditor: {fileID: 0}
-  _glowColor: {r: 1, g: 1, b: 1, a: 0}
+  _glowColor:
+    r: 1
+    g: 1
+    b: 1
+    a: 0
   _glowType: 18
+  _glowEnabled: 0
+  _started: 0
 --- !u!1 &2146060410
 GameObject:
   m_ObjectHideFlags: 0

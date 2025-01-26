@@ -6,12 +6,15 @@ public class SumaDeLasCargasManager : MonoBehaviour
 {
     public Button botonSumaCargas;
     public GameObject prefabIndicadorFuerzaIndividual; // Prefab del indicador individual
-    public Transform posicionSensor; // Posición del sensor
 
+    private IndicadorFuerza indicadorFuerza;
     private List<IndicadorFuerzaIndividual> indicadoresFuerzaIndividuales = new List<IndicadorFuerzaIndividual>();
 
     void Start()
     {
+        // Buscar el objeto IndicadorFuerza en la escena
+        indicadorFuerza = Object.FindFirstObjectByType<IndicadorFuerza>();
+
         if (botonSumaCargas != null)
         {
             botonSumaCargas.onClick.AddListener(CalcularSumaCargas);
@@ -20,12 +23,21 @@ public class SumaDeLasCargasManager : MonoBehaviour
 
     void CalcularSumaCargas()
     {
+        if (indicadorFuerza == null)
+        {
+            Debug.LogError("No se encontró un objeto IndicadorFuerza en la escena.");
+            return;
+        }
+
         // Limpiar los indicadores anteriores
         foreach (var indicador in indicadoresFuerzaIndividuales)
         {
             Destroy(indicador.gameObject);
         }
         indicadoresFuerzaIndividuales.Clear();
+
+        // Obtener la posición del sensor
+        Vector3 posicionSensor = indicadorFuerza.transform.position;
 
         // Crear nuevos indicadores para cada carga
         foreach (var carga in Object.FindObjectsByType<Carga>(FindObjectsSortMode.None))
@@ -38,7 +50,7 @@ public class SumaDeLasCargasManager : MonoBehaviour
             Vector3 fuerza = carga.fuerza * (carga.esPositiva ? Vector3.one : -Vector3.one); // Ajusta según cómo se define la fuerza
 
             // Actualizar la dirección del indicador
-            indicadorScript.ActualizarDireccion(fuerza, carga.transform.position, posicionSensor.position, carga.esPositiva);
+            indicadorScript.ActualizarDireccion(fuerza, carga.transform.position, posicionSensor, carga.esPositiva);
 
             // Guardar el indicador en la lista
             indicadoresFuerzaIndividuales.Add(indicadorScript);
