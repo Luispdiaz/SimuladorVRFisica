@@ -37,14 +37,30 @@ public class SumaDeLasCargasManager : MonoBehaviour
             GameObject nuevoIndicador = Instantiate(prefabIndicadorFuerzaIndividual, carga.transform.position, Quaternion.identity);
             IndicadorFuerzaIndividual indicadorScript = nuevoIndicador.GetComponent<IndicadorFuerzaIndividual>();
 
-            // Calcular la fuerza individual
-            Vector3 fuerza = carga.fuerza * (carga.esPositiva ? Vector3.one : -Vector3.one);
+            // Calcular la fuerza individual basada en la posición del sensor general
+            Vector3 fuerza = CalcularFuerzaIndividual(carga, indicadorScript.transform.position);
 
             // Actualizar la dirección del indicador
-            indicadorScript.ActualizarDireccion(fuerza, carga.transform.position, carga.transform.position, carga.esPositiva);
+            indicadorScript.ActualizarDireccion(fuerza, carga.transform.position, indicadorScript.transform.position, carga.esPositiva);
 
             // Guardar el indicador en la lista
             indicadoresFuerzaIndividuales.Add(nuevoIndicador);
         }
+    }
+
+    private Vector3 CalcularFuerzaIndividual(Carga carga, Vector3 posicionSensor)
+    {
+        Vector3 direccion = posicionSensor - carga.transform.position;
+        float distancia = direccion.magnitude;
+        if (distancia > 0.01f) // Evitar división por cero
+        {
+            float fuerzaMagnitud = carga.fuerza / Mathf.Pow(distancia, 2);
+            if (!carga.esPositiva)
+            {
+                fuerzaMagnitud = -fuerzaMagnitud; // Invertir la fuerza para cargas negativas
+            }
+            return fuerzaMagnitud * direccion.normalized;
+        }
+        return Vector3.zero;
     }
 }
