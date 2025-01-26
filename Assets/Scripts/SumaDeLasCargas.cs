@@ -7,14 +7,13 @@ public class SumaDeLasCargasManager : MonoBehaviour
     public Button botonSumaCargas;
     public GameObject prefabIndicadorFuerzaIndividual; // Prefab del indicador individual
 
-    private IndicadorFuerza indicadorFuerza;
-    private List<IndicadorFuerzaIndividual> indicadoresFuerzaIndividuales = new List<IndicadorFuerzaIndividual>();
+    private List<GameObject> indicadoresFuerzaIndividuales = new List<GameObject>();
 
     void Start()
     {
         if (botonSumaCargas != null)
         {
-            botonSumaCargas.onClick.AddListener(CalcularSumaCargas);
+            botonSumaCargas.onClick.AddListener(CrearIndicadoresIndividuales);
         }
         else
         {
@@ -22,45 +21,30 @@ public class SumaDeLasCargasManager : MonoBehaviour
         }
     }
 
-    public void RegistrarIndicadorFuerza(IndicadorFuerza nuevoIndicadorFuerza)
+    private void CrearIndicadoresIndividuales()
     {
-        indicadorFuerza = nuevoIndicadorFuerza;
-        Debug.Log("IndicadorFuerza registrado.");
-    }
-
-    void CalcularSumaCargas()
-    {
-        if (indicadorFuerza == null)
-        {
-            Debug.LogError("No se encontró un objeto IndicadorFuerza en la escena.");
-            return;
-        }
-
         // Limpiar los indicadores anteriores
         foreach (var indicador in indicadoresFuerzaIndividuales)
         {
-            Destroy(indicador.gameObject);
+            Destroy(indicador);
         }
         indicadoresFuerzaIndividuales.Clear();
-
-        // Obtener la posición del sensor
-        Vector3 posicionSensor = indicadorFuerza.transform.position;
 
         // Crear nuevos indicadores para cada carga
         foreach (var carga in Object.FindObjectsByType<Carga>(FindObjectsSortMode.None))
         {
             // Crear un nuevo indicador
-            GameObject nuevoIndicador = Instantiate(prefabIndicadorFuerzaIndividual, transform);
+            GameObject nuevoIndicador = Instantiate(prefabIndicadorFuerzaIndividual, carga.transform.position, Quaternion.identity);
             IndicadorFuerzaIndividual indicadorScript = nuevoIndicador.GetComponent<IndicadorFuerzaIndividual>();
 
             // Calcular la fuerza individual
-            Vector3 fuerza = carga.fuerza * (carga.esPositiva ? Vector3.one : -Vector3.one); // Ajusta según cómo se define la fuerza
+            Vector3 fuerza = carga.fuerza * (carga.esPositiva ? Vector3.one : -Vector3.one);
 
             // Actualizar la dirección del indicador
-            indicadorScript.ActualizarDireccion(fuerza, carga.transform.position, posicionSensor, carga.esPositiva);
+            indicadorScript.ActualizarDireccion(fuerza, carga.transform.position, carga.transform.position, carga.esPositiva);
 
             // Guardar el indicador en la lista
-            indicadoresFuerzaIndividuales.Add(indicadorScript);
+            indicadoresFuerzaIndividuales.Add(nuevoIndicador);
         }
     }
 }
