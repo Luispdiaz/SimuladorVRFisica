@@ -28,7 +28,7 @@ public class SumaDeLasCargasManager : MonoBehaviour
         indicadoresFuerzaIndividuales.Clear();
 
         // Crear nuevos indicadores para cada carga
-        foreach (var carga in FindObjectsOfType<Carga>())
+        foreach (var carga in Object.FindObjectsByType<Carga>(FindObjectsSortMode.None))
         {
             // Crear un nuevo indicador
             GameObject nuevoIndicador = Instantiate(prefabIndicadorFuerzaIndividual, transform);
