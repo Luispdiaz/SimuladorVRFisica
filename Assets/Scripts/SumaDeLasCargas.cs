@@ -38,10 +38,10 @@ public class SumaDeLasCargasManager : MonoBehaviour
             IndicadorFuerzaIndividual indicadorScript = nuevoIndicador.GetComponent<IndicadorFuerzaIndividual>();
 
             // Calcular la fuerza individual basada en la posición del sensor general
-            Vector3 fuerza = CalcularFuerzaIndividual(carga, indicadorScript.transform.position);
+            Vector3 fuerza = CalcularFuerzaIndividual(carga, carga.transform.position);
 
             // Actualizar la dirección del indicador
-            indicadorScript.ActualizarDireccion(fuerza, carga.transform.position, indicadorScript.transform.position, carga.esPositiva);
+            indicadorScript.ActualizarDireccion(fuerza, carga.transform.position, carga.transform.position, carga.esPositiva);
 
             // Guardar el indicador en la lista
             indicadoresFuerzaIndividuales.Add(nuevoIndicador);

@@ -8,6 +8,16 @@ public class IndicadorFuerzaIndividual : MonoBehaviour
 
     private float distanciaBaseCuerpo = 0.11f;
     private float distanciaCuerpoPunta = 0.09f;
+    private float escalaInicialCuerpo;
+
+    private void Start()
+    {
+        // Guardar la escala inicial del cuerpo
+        if (cuerpo != null)
+        {
+            escalaInicialCuerpo = cuerpo.localScale.y;
+        }
+    }
 
     /// <summary>
     /// Actualiza la dirección del indicador basado en la fuerza individual.
@@ -38,12 +48,16 @@ public class IndicadorFuerzaIndividual : MonoBehaviour
             {
                 cuerpo.position = baseEsfera.position + (direccionNormalizada * distanciaBaseCuerpo);
                 cuerpo.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
+
+                // Ajustar la longitud del cuerpo basado en la magnitud de la fuerza
+                float escalaCuerpo = escalaInicialCuerpo * fuerza.magnitude;
+                cuerpo.localScale = new Vector3(cuerpo.localScale.x, escalaCuerpo, cuerpo.localScale.z);
             }
 
             // Ajustar la posición y rotación de la punta
             if (punta != null)
             {
-                punta.position = cuerpo.position + (direccionNormalizada * distanciaCuerpoPunta);
+                punta.position = cuerpo.position + (direccionNormalizada * (distanciaCuerpoPunta + (fuerza.magnitude - 1)));
                 punta.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
             }
         }
