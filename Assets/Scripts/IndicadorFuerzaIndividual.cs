@@ -36,7 +36,7 @@ public class IndicadorFuerzaIndividual : MonoBehaviour
             // Posicionar la base del indicador en la posición del sensor
             if (baseEsfera != null)
             {
-                baseEsfera.position = posicionSensor;
+                baseEsfera.position = esPositiva ? posicionCarga : posicionSensor;
             }
 
             // Rotar el indicador completo para alinearlo con la dirección de la fuerza
