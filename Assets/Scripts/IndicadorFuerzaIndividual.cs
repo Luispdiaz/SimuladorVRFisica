@@ -9,19 +9,29 @@ public class IndicadorFuerzaIndividual : MonoBehaviour
     /// </summary>
     /// <param name="fuerza">Vector de fuerza que determina la dirección</param>
     /// <param name="posicionCarga">Posición de la carga</param>
-    public void ActualizarDireccion(Vector3 fuerza, Vector3 posicionCarga, Vector3 posicionSensor)
+    /// <param name="posicionSensor">Posición del sensor</param>
+    public void ActualizarDireccion(Vector3 fuerza, Vector3 posicionCarga, Vector3 posicionSensor, bool esPositiva)
     {
         if (fuerza.magnitude > 0.01f) // Asegurarse de que haya una fuerza significativa
         {
-            // Normalizar la dirección de la fuerza
-            Vector3 direccionNormalizada = fuerza.normalized;
+            // Calcular la dirección desde el sensor hacia la carga (para positiva) o viceversa (para negativa)
+            Vector3 direccion;
+            if (esPositiva)
+            {
+                direccion = posicionCarga - posicionSensor; // Repulsiva
+            }
+            else
+            {
+                direccion = posicionSensor - posicionCarga; // Atractiva
+            }
+            Vector3 direccionNormalizada = direccion.normalized;
 
-            // Rotar el indicador completo para alinearlo con la dirección de la fuerza
+            // Rotar el indicador completo para alinearlo con la dirección
             Quaternion rotacionIndicador = Quaternion.LookRotation(direccionNormalizada, Vector3.up);
             flecha.rotation = rotacionIndicador;
 
             // Ajustar la posición de la flecha tomando como referencia la posición del sensor
-            flecha.position = posicionCarga + (direccionNormalizada * 0.1f); // Posición relativa a la carga
+            flecha.position = posicionSensor;
         }
     }
 }

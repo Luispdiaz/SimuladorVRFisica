@@ -38,7 +38,7 @@ public class SumaDeLasCargasManager : MonoBehaviour
             Vector3 fuerza = carga.fuerza * (carga.esPositiva ? Vector3.one : -Vector3.one); // Ajusta según cómo se define la fuerza
 
             // Actualizar la dirección del indicador
-            indicadorScript.ActualizarDireccion(fuerza, carga.transform.position, posicionSensor.position);
+            indicadorScript.ActualizarDireccion(fuerza, carga.transform.position, posicionSensor.position, carga.esPositiva);
 
             // Guardar el indicador en la lista
             indicadoresFuerzaIndividuales.Add(indicadorScript);
