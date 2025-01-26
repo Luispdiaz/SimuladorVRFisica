@@ -6,6 +6,7 @@ public class CargaPuntualManager : MonoBehaviour
 {
     // Referencias a UI y objetos
     public GameObject subMenuCarga; // Panel del submenú
+    public GameObject tituloSubMenu; // Título del submenú
     public Button insertarCargaPositivaBtn; // Botón para insertar carga positiva
     public Button insertarCargaNegativaBtn; // Botón para insertar carga negativa
     public Button botonSensor; // Botón para crear sensores (indicadores de fuerza)
@@ -25,8 +26,9 @@ public class CargaPuntualManager : MonoBehaviour
 
     private void Start()
     {
-        // Ocultar el submenú al inicio
+        // Ocultar el submenú y el título al inicio
         subMenuCarga.SetActive(false);
+        tituloSubMenu.SetActive(false);
 
         // Asignar funciones a los botones
         insertarCargaPositivaBtn.onClick.AddListener(IngresarCargaPositiva);
@@ -75,11 +77,13 @@ public class CargaPuntualManager : MonoBehaviour
     public void MostrarSubMenuCargas()
     {
         subMenuCarga.SetActive(true);
+        tituloSubMenu.SetActive(true); // Mostrar el título
     }
 
     public void CerrarSubMenu()
     {
         subMenuCarga.SetActive(false);
+        tituloSubMenu.SetActive(false); // Ocultar el título
     }
 
     public void IngresarCargaPositiva()
