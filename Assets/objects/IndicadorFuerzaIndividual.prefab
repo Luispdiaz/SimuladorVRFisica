@@ -403,4 +403,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32ce841ed69eb7740bd71fa560196228, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flecha: {fileID: 2323276197015448892}
+  baseEsfera: {fileID: 8795790232390611828}
+  cuerpo: {fileID: 2574456279987853086}
+  punta: {fileID: 4699577954934133950}

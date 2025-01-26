@@ -14,6 +14,14 @@ public class SumaDeLasCargasManager : MonoBehaviour
     {
         // Buscar el objeto IndicadorFuerza en la escena
         indicadorFuerza = Object.FindFirstObjectByType<IndicadorFuerza>();
+        if (indicadorFuerza != null)
+        {
+            Debug.Log("IndicadorFuerza encontrado.");
+        }
+        else
+        {
+            Debug.LogError("No se encontró un objeto IndicadorFuerza en la escena.");
+        }
 
         if (botonSumaCargas != null)
         {
@@ -38,16 +46,20 @@ public class SumaDeLasCargasManager : MonoBehaviour
 
         // Obtener la posición del sensor
         Vector3 posicionSensor = indicadorFuerza.transform.position;
+        Debug.Log($"Posición del sensor: {posicionSensor}");
 
         // Crear nuevos indicadores para cada carga
         foreach (var carga in Object.FindObjectsByType<Carga>(FindObjectsSortMode.None))
         {
+            Debug.Log($"Encontrada carga en posición: {carga.transform.position}");
+
             // Crear un nuevo indicador
             GameObject nuevoIndicador = Instantiate(prefabIndicadorFuerzaIndividual, transform);
             IndicadorFuerzaIndividual indicadorScript = nuevoIndicador.GetComponent<IndicadorFuerzaIndividual>();
 
             // Calcular la fuerza individual
             Vector3 fuerza = carga.fuerza * (carga.esPositiva ? Vector3.one : -Vector3.one); // Ajusta según cómo se define la fuerza
+            Debug.Log($"Fuerza calculada: {fuerza}");
 
             // Actualizar la dirección del indicador
             indicadorScript.ActualizarDireccion(fuerza, carga.transform.position, posicionSensor, carga.esPositiva);
