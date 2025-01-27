@@ -488,7 +488,7 @@ GameObject:
   - component: {fileID: 65384163}
   - component: {fileID: 65384162}
   m_Layer: 0
-  m_Name: RecalcularFlechas
+  m_Name: SumaDeCargas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10097,7 +10097,7 @@ GameObject:
   - component: {fileID: 1248481492}
   - component: {fileID: 1248481491}
   m_Layer: 0
-  m_Name: RecalcularFlechas
+  m_Name: SumaDeCargas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10142,7 +10142,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: RecalcularFlechas
+  m_text: SumaDeCargas
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -17067,9 +17067,9 @@ MonoBehaviour:
   insertarCargaPositivaBtn: {fileID: 2140113563}
   insertarCargaNegativaBtn: {fileID: 675066373}
   botonSensor: {fileID: 1847501569}
+  sumaDeCargasButton: {fileID: 65384162}
   closeButton: {fileID: 460786280}
   recalcularButton: {fileID: 2014489593}
-  recalcularFlechasButton: {fileID: 65384162}
   spawnPoint: {fileID: 365591358}
   cargaPositivaPrefab: {fileID: 8069956676135863939, guid: 02c389e4281839c42b1742cff1a5c103, type: 3}
   cargaNegativaPrefab: {fileID: 3345438392130300214, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
@@ -17090,7 +17090,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   miniSpherePrefab: {fileID: 2877251215816945538, guid: 43abdaae7fc194f4e8186551e8c5c54d, type: 3}
-  numberOfPoints: 10
+  numberOfPoints: 30
 --- !u!114 &2136638488
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17100,10 +17100,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2136638483}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 99c4ac8bb90c04d40a02816ccc558c95, type: 3}
+  m_Script: {fileID: 11500000, guid: b334b8d177e697e4785ac1bbf5847a1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flechaPrefab: {fileID: 6517460328304827515, guid: f9ac0047400cc6a49afdc7527421957a, type: 3}
+  miniSpherePrefab: {fileID: 2877251215816945538, guid: 43abdaae7fc194f4e8186551e8c5c54d, type: 3}
+  numberOfPoints: 30
 --- !u!1 &2138702807
 GameObject:
   m_ObjectHideFlags: 0

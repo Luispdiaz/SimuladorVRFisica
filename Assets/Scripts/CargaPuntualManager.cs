@@ -9,9 +9,9 @@ public class CargaPuntualManager : MonoBehaviour
     public Button insertarCargaPositivaBtn; // Botón para insertar carga positiva
     public Button insertarCargaNegativaBtn; // Botón para insertar carga negativa
     public Button botonSensor; // Botón para crear sensores (indicadores de fuerza)
+    public Button sumaDeCargasButton; // Botón para crear la suma de cargas
     public Button closeButton; // Botón para cerrar el submenú
     public Button recalcularButton; // Botón para recalcular las mini esferas
-    public Button recalcularFlechasButton;
     public Transform spawnPoint; // Punto de aparición de las cargas e indicadores
     public GameObject cargaPositivaPrefab; // Prefab de la carga positiva
     public GameObject cargaNegativaPrefab; // Prefab de la carga negativa
@@ -23,7 +23,7 @@ public class CargaPuntualManager : MonoBehaviour
     private List<GameObject> cargas = new List<GameObject>(); // Lista para almacenar las cargas
     private List<GameObject> sensores = new List<GameObject>(); // Lista para almacenar los sensores creados
     private LineasPunteadas lineasPunteadas;
-    private FlechasManager flechasManager;
+    private SumaDeCargas sumaDeCargas; // Nueva referencia para SumaDeCargas
 
     private void Start()
     {
@@ -34,9 +34,9 @@ public class CargaPuntualManager : MonoBehaviour
         insertarCargaPositivaBtn.onClick.AddListener(IngresarCargaPositiva);
         insertarCargaNegativaBtn.onClick.AddListener(IngresarCargaNegativa);
         botonSensor.onClick.AddListener(CrearSensor);
+        sumaDeCargasButton.onClick.AddListener(CrearSumaDeCargas); // Asignar la función de suma de cargas
         closeButton.onClick.AddListener(CerrarSubMenu);
         recalcularButton.onClick.AddListener(RecalcularLineasPunteadas); // Asignar la función de recalcular
-        recalcularFlechasButton.onClick.AddListener(RecalcularFlechas);
 
         // Asignar función al slider
         fuerzaSlider.onValueChanged.AddListener(ActualizarTextoFuerza);
@@ -51,7 +51,7 @@ public class CargaPuntualManager : MonoBehaviour
 
         ActualizarTextoFuerza(fuerzaSlider.value); // Actualizar el texto al inicio
 
-        // Inicializar LineasPunteadas
+        // Inicializar LineasPunteadas y SumaDeCargas
         lineasPunteadas = GetComponent<LineasPunteadas>();
         if (lineasPunteadas == null)
         {
@@ -59,11 +59,12 @@ public class CargaPuntualManager : MonoBehaviour
         }
         lineasPunteadas.miniSpherePrefab = miniSpherePrefab;
 
-        flechasManager = GetComponent<FlechasManager>();
-        if (flechasManager == null)
+        sumaDeCargas = GetComponent<SumaDeCargas>();
+        if (sumaDeCargas == null)
         {
-            flechasManager = gameObject.AddComponent<FlechasManager>();
+            sumaDeCargas = gameObject.AddComponent<SumaDeCargas>();
         }
+        sumaDeCargas.miniSpherePrefab = miniSpherePrefab;
     }
 
     private void Update()
@@ -207,31 +208,26 @@ public class CargaPuntualManager : MonoBehaviour
         }
     }
 
-    // Método para recalcular flechas
-    private void RecalcularFlechas()
+    private void CrearSumaDeCargas()
     {
-        // Asegúrate de que el método está correctamente declarado
-        if (flechasManager != null)
+        // Eliminar mini esferas existentes
+        GameObject[] existingSpheres = GameObject.FindGameObjectsWithTag("MiniSphere");
+        foreach (GameObject sphere in existingSpheres)
         {
-            // Eliminar flechas existentes
-            flechasManager.EliminarFlechas();
+            Destroy(sphere);
+        }
 
-            // Crear una nueva flecha para cada carga hacia todos los sensores
-            foreach (var sensor in sensores)
+        // Crear suma de cargas para cada carga hacia todos los sensores
+        foreach (var sensor in sensores)
+        {
+            foreach (var carga in cargas)
             {
-                foreach (var carga in cargas)
+                var cargaScript = carga.GetComponent<Carga>();
+                if (cargaScript != null)
                 {
-                    Carga cargaScript = carga.GetComponent<Carga>();
-                    if (cargaScript != null)
-                    {
-                        flechasManager.CrearFlecha(carga.transform.position, sensor.transform.position, cargaScript.esPositiva);
-                    }
+                    sumaDeCargas.CrearSumaDeCargas(sensor.transform.position, carga.transform.position, cargaScript.esPositiva);
                 }
             }
-        }
-        else
-        {
-            Debug.LogError("FlechasManager is not initialized.");
         }
     }
 }
