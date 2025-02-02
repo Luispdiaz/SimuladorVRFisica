@@ -13991,7 +13991,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   piramidePrefab: {fileID: 5879459822390900289, guid: 40c2fdd48f104b946a0b813b2ded3149, type: 3}
   arrowPrefab: {fileID: 8848935907765805432, guid: e5f7f7f56d6d7444e810aa26ceaa770f, type: 3}
-  arrowThickness: 3
+  arrowThickness: 2.5
   arrowLength: 1
   radioEsfera: 1.5
   angularStepDegrees: 10
