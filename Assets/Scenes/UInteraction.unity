@@ -13991,8 +13991,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   piramidePrefab: {fileID: 5879459822390900289, guid: 40c2fdd48f104b946a0b813b2ded3149, type: 3}
   arrowPrefab: {fileID: 8848935907765805432, guid: e5f7f7f56d6d7444e810aa26ceaa770f, type: 3}
+  planoPrefab: {fileID: 3637808286258318141, guid: 5a0ace4f21317e8409e75e3fec5bd441, type: 3}
   arrowThickness: 2.5
   arrowLength: 1
+  arrowHeight: 1
+  arrowWidth: 1
   radioEsfera: 1.5
   angularStepDegrees: 10
   alturaPiramide: 1
@@ -14000,8 +14003,12 @@ MonoBehaviour:
   radioCilindro: 1
   alturaCilindro: 2
   divisionesAltura: 10
+  anchoPlano: 2.5
+  altoPlano: 2.5
+  planeYOffset: 1.5
   botonCrearEsfera: {fileID: 1310455461}
   botonCrearCilindro: {fileID: 1202615810}
+  botonCrearPlano: {fileID: 2129925551}
   subMenuCarga: {fileID: 1075933543}
   tituloSubMenu: {fileID: 914894934}
   closeButton: {fileID: 537267053}
