@@ -6,6 +6,7 @@ public class SumaDeCargas : MonoBehaviour
     public GameObject flechaPrefab;
     public List<GameObject> sensores = new List<GameObject>();
     public Dictionary<GameObject, GameObject> flechasPorCarga = new Dictionary<GameObject, GameObject>();
+    private Dictionary<GameObject, Vector3> posicionesFinalesPorSensor = new Dictionary<GameObject, Vector3>();
 
     public float factorEscalaFuerza = 0.1f;
 
@@ -49,58 +50,76 @@ public class SumaDeCargas : MonoBehaviour
 
         if (sensor != null && cargaScript != null)
         {
-            // 1. Calcular dirección y distancia
-            Vector3 direccion = cargaScript.esPositiva
-                ? (sensor.transform.position - carga.transform.position).normalized
-                : (carga.transform.position - sensor.transform.position).normalized;
+            Vector3 direccionFuerza = CalcularFuerzaIndividual(carga, sensor.transform.position);
+            float magnitudFuerza = direccionFuerza.magnitude;
+            float longitudFlecha = 0f;
 
-            float distancia = Vector3.Distance(carga.transform.position, sensor.transform.position);
-
-            // 2. Calcular fuerza
-            float fuerza = Mathf.Abs(cargaScript.fuerza) / Mathf.Pow(distancia, 2);
-
-            // 3. Ajustar escala del cilindro (eje Y)
             Transform cuerpo = flecha.transform.Find("Cuerpo");
             Transform punta = flecha.transform.Find("Punta");
+
             if (cuerpo != null)
             {
+                // 1. Calcular escala a MITAD de la longitud deseada (por el pivote central)
                 Vector3 nuevaEscala = cuerpo.localScale;
-                nuevaEscala.y = fuerza * factorEscalaFuerza;
+                nuevaEscala.y = (magnitudFuerza * factorEscalaFuerza) * 0.5f; // <-- Mitad de la longitud real
                 cuerpo.localScale = nuevaEscala;
 
-                // Posición del cilindro ajustada al centro de su altura
-                cuerpo.localPosition = new Vector3(0, nuevaEscala.y / 2f, 0);
+                // 2. Compensar posición (el cilindro crecerá el doble desde el centro)
+                cuerpo.localPosition = new Vector3(0, nuevaEscala.y, 0); // Mover solo 1/4 de la longitud total
 
-                // Posicionar la punta al final del cilindro (en coordenadas locales)
                 if (punta != null)
                 {
-                    punta.localPosition = new Vector3(0, nuevaEscala.y, 0); // 100% de la altura del cilindro
+                    // 3. Posicionar punta en el extremo final real
+                    punta.localPosition = new Vector3(0, nuevaEscala.y * 2, 0); // Doble de la escala
                 }
+
+                // 4. Longitud real = escala * 2 (por el pivote central)
+                longitudFlecha = nuevaEscala.y * 2;
             }
 
+            flecha.transform.rotation = Quaternion.LookRotation(direccionFuerza) * Quaternion.Euler(90, 0, 0);
 
-            // 4. Aplicar rotación corregida (90° en X + dirección)
-            Quaternion rotacionBase = Quaternion.LookRotation(direccion) * Quaternion.Euler(90, 0, 0);
-            flecha.transform.rotation = rotacionBase;
+            Vector3 posicionInicial = posicionesFinalesPorSensor.ContainsKey(sensor) ?
+                                    posicionesFinalesPorSensor[sensor] :
+                                    sensor.transform.position;
 
-            // 5. Invertir dirección para cargas negativas (180° en Y)
-            if (!cargaScript.esPositiva)
-            {
-                flecha.transform.Rotate(0, 180f, 0, Space.Self); // Rotación local
-            }
+            flecha.transform.position = posicionInicial;
+            posicionesFinalesPorSensor[sensor] = posicionInicial + (direccionFuerza.normalized * longitudFlecha);
 
-            // 6. Posicionamiento
-            float factorPosicion = cargaScript.esPositiva ? 0.3f : 0.7f;
-            flecha.transform.position = Vector3.Lerp(
-                carga.transform.position,
-                sensor.transform.position,
-                factorPosicion
-            );
-
-            // 7. Color
             ActualizarColor(flecha, cargaScript.esPositiva ? Color.red : Color.blue);
         }
     }
+
+    private Vector3 CalcularFuerzaIndividual(GameObject carga, Vector3 posicionSensor)
+    {
+        Carga cargaScript = carga.GetComponent<Carga>();
+        Vector3 direccion = posicionSensor - carga.transform.position;
+        float distancia = direccion.magnitude;
+
+        if (distancia > 0.01f)
+        {
+            float fuerzaMagnitud = cargaScript.fuerza / Mathf.Pow(distancia, 2);
+            if (!cargaScript.esPositiva)
+            {
+                fuerzaMagnitud = -fuerzaMagnitud;
+            }
+            return fuerzaMagnitud * direccion.normalized;
+        }
+        return Vector3.zero;
+    }
+
+    private void LateUpdate()
+    {
+        // Reiniciar posiciones acumuladas cada frame
+        posicionesFinalesPorSensor.Clear();
+
+        // Actualizar todas las flechas en orden de influencia
+        foreach (var par in flechasPorCarga)
+        {
+            ActualizarFlecha(par.Value, par.Key);
+        }
+    }
+
 
     private void ActualizarColor(GameObject flecha, Color color)
     {
