@@ -558,17 +558,17 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 11500000, guid: dc34a4fb9fc06824387d033e61cf631d, type: 3}
-        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
-        m_MethodName: set_name
-        m_Mode: 5
+      - m_Target: {fileID: 8848935907765805432, guid: e5f7f7f56d6d7444e810aa26ceaa770f, type: 3}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: CrearIndicadoresIndividuales
-          m_BoolArgument: 0
+          m_BoolArgument: 1
         m_CallState: 2
 --- !u!114 &65384163
 MonoBehaviour:
@@ -17103,8 +17103,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b334b8d177e697e4785ac1bbf5847a1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  miniSpherePrefab: {fileID: 2877251215816945538, guid: 43abdaae7fc194f4e8186551e8c5c54d, type: 3}
-  numberOfPoints: 30
+  flechaPrefab: {fileID: 8848935907765805432, guid: e5f7f7f56d6d7444e810aa26ceaa770f, type: 3}
+  sensores: []
+  grosorCilindro: 0.1
 --- !u!1 &2138702807
 GameObject:
   m_ObjectHideFlags: 0

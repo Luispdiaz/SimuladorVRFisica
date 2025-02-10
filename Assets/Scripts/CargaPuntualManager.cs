@@ -64,7 +64,6 @@ public class CargaPuntualManager : MonoBehaviour
         {
             sumaDeCargas = gameObject.AddComponent<SumaDeCargas>();
         }
-        sumaDeCargas.miniSpherePrefab = miniSpherePrefab;
     }
 
     private void Update()
@@ -110,6 +109,8 @@ public class CargaPuntualManager : MonoBehaviour
         cargaScript.fuerza = fuerza;
         cargaScript.esPositiva = esPositiva;
         cargas.Add(nuevaCarga);
+
+        // Crear flecha para la nueva carga
     }
 
     private void CrearSensor()
@@ -178,16 +179,6 @@ public class CargaPuntualManager : MonoBehaviour
         }
     }
 
-    public void ActualizarReferencias()
-    {
-        // Actualizar las listas de cargas y sensores
-        cargas.Clear();
-        sensores.Clear();
-
-        // Encontrar todas las cargas y sensores en la escena
-        cargas.AddRange(GameObject.FindGameObjectsWithTag("Destructible"));
-        sensores.AddRange(GameObject.FindGameObjectsWithTag("Sensor"));
-    }
 
     private void RecalcularLineasPunteadas()
     {
@@ -208,26 +199,31 @@ public class CargaPuntualManager : MonoBehaviour
         }
     }
 
-    private void CrearSumaDeCargas()
+    public void CrearSumaDeCargas()
     {
-        // Eliminar mini esferas existentes
-        GameObject[] existingSpheres = GameObject.FindGameObjectsWithTag("MiniSphere");
-        foreach (GameObject sphere in existingSpheres)
+        // Update the list of sensors in SumaDeCargas
+        sumaDeCargas.sensores = sensores;
+
+        // Create or update arrows for all charges
+        foreach (var carga in cargas)
         {
-            Destroy(sphere);
+            sumaDeCargas.CrearOActualizarFlechaParaCarga(carga);
+        }
+    }
+    public void EliminarCarga(GameObject carga)
+    {
+        // Remove the carga from the list
+        cargas.Remove(carga);
+
+        // Remove the arrow associated with this carga
+        if (sumaDeCargas.flechasPorCarga.TryGetValue(carga, out var flecha))
+        {
+            Destroy(flecha);
+            sumaDeCargas.flechasPorCarga.Remove(carga);
         }
 
-        // Crear suma de cargas para cada carga hacia todos los sensores
-        foreach (var sensor in sensores)
-        {
-            foreach (var carga in cargas)
-            {
-                var cargaScript = carga.GetComponent<Carga>();
-                if (cargaScript != null)
-                {
-                    sumaDeCargas.CrearSumaDeCargas(sensor.transform.position, carga.transform.position, cargaScript.esPositiva);
-                }
-            }
-        }
+        // Destroy the carga GameObject
+        Destroy(carga);
+
     }
 }
