@@ -339,8 +339,9 @@ GameObject:
   - component: {fileID: 2323276197015448892}
   - component: {fileID: 1350816939557007268}
   - component: {fileID: 3454037235232064286}
+  - component: {fileID: -4671340936307625301}
   m_Layer: 0
-  m_Name: IndicadorFuerzaIndividual
+  m_Name: IndicadorFuerzaIndividual 1
   m_TagString: Destructible
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -354,16 +355,16 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8848935907765805432}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -2.3151736, y: -6.2023225, z: 15.592409}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2574456279987853086}
   - {fileID: 4699577954934133950}
   - {fileID: 8795790232390611828}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!54 &1350816939557007268
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -398,7 +399,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8848935907765805432}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 32ce841ed69eb7740bd71fa560196228, type: 3}
   m_Name: 
@@ -406,3 +407,17 @@ MonoBehaviour:
   baseEsfera: {fileID: 0}
   cuerpo: {fileID: 0}
   punta: {fileID: 0}
+--- !u!114 &-4671340936307625301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8848935907765805432}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd7d736f23ba4fa4e93c3b70255aaf2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  referenceObject: {fileID: 8584711764914592604, guid: ac892937bd299c54084be51753e96c80, type: 3}
+  offset: {x: 0, y: 0, z: 0}

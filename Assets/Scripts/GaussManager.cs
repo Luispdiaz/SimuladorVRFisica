@@ -86,7 +86,10 @@ public class GeometriaPiramidal : MonoBehaviour
                     Mathf.Cos(latCenter) * Mathf.Sin(lonCenter)
                 );
 
+                // Calculamos el centro del patch en la esfera y lo movemos 0.5 unidad hacia el centro
                 Vector3 centerPos = sphereOrigin + normal * radioEsfera;
+                centerPos -= normal * 0.5f; // Acercar 0.5 unidades hacia el centro
+
                 float patchWidth = radioEsfera * dLon * Mathf.Cos(latCenter);
                 float patchHeight = radioEsfera * dLat;
                 Vector3 escala = new Vector3(patchWidth, alturaPiramide, patchHeight);
@@ -99,13 +102,15 @@ public class GeometriaPiramidal : MonoBehaviour
                 }
                 tangent.Normalize();
 
-                Quaternion rot = Quaternion.LookRotation(tangent, inward);
+                // Rotamos 45° extra sobre el eje Y para la esfera
+                Quaternion rot = Quaternion.LookRotation(tangent, inward) * Quaternion.Euler(0, 45, 0);
+
                 GameObject piramide = Instantiate(piramidePrefab, centerPos, rot);
                 piramide.transform.localScale = escala;
 
                 if (arrowPrefab != null)
                 {
-                    Quaternion arrowRot = Quaternion.LookRotation(tangent, normal);
+                    Quaternion arrowRot = Quaternion.LookRotation(tangent, normal) * Quaternion.Euler(0, 90, 0);
                     GameObject arrow = Instantiate(arrowPrefab, centerPos, arrowRot, piramide.transform);
                     arrow.transform.localPosition = Vector3.zero;
                     arrow.transform.localScale = new Vector3(arrowThickness, arrowLength, arrowThickness);
@@ -131,10 +136,14 @@ public class GeometriaPiramidal : MonoBehaviour
 
                 Vector3 normal = new Vector3(Mathf.Cos(angulo), 0, Mathf.Sin(angulo));
                 Vector3 centerPos = sphereOrigin + normal * radioCilindro + new Vector3(0, alturaActual, 0);
+                centerPos -= normal * 0.35f; // Acercar 1 unidad hacia el centro
 
+                // Calculamos los parámetros del parche para el cilindro:
                 float patchWidth = radioCilindro * angularStep;
                 float patchHeight = alturaStep;
-                Vector3 escala = new Vector3(patchWidth, alturaPiramide, patchHeight);
+                // Para evitar compresión, usamos un valor uniforme para el eje X y Z.
+                float side = Mathf.Max(patchWidth, patchHeight);
+                Vector3 escala = new Vector3(side, alturaPiramide, side);
 
                 Vector3 inward = -normal;
                 Vector3 tangent = Vector3.Cross(inward, Vector3.up);
@@ -144,13 +153,15 @@ public class GeometriaPiramidal : MonoBehaviour
                 }
                 tangent.Normalize();
 
-                Quaternion rot = Quaternion.LookRotation(tangent, inward);
+                // Para el cilindro rotamos 40° extra sobre el eje Y (puedes ajustar este valor)
+                Quaternion rot = Quaternion.LookRotation(tangent, inward) * Quaternion.Euler(0, 45, 0);
+
                 GameObject piramide = Instantiate(piramidePrefab, centerPos, rot);
                 piramide.transform.localScale = escala;
 
                 if (arrowPrefab != null)
                 {
-                    Quaternion arrowRot = Quaternion.LookRotation(tangent, normal);
+                    Quaternion arrowRot = Quaternion.LookRotation(tangent, normal) * Quaternion.Euler(0, 45, 0);
                     GameObject arrow = Instantiate(arrowPrefab, centerPos, arrowRot, piramide.transform);
                     arrow.transform.localPosition = Vector3.zero;
                     arrow.transform.localScale = new Vector3(arrowThickness, arrowLength, arrowThickness);
@@ -199,5 +210,4 @@ public class GeometriaPiramidal : MonoBehaviour
 
         Debug.Log("Plano insertado con 9 vectores.");
     }
-
 }
