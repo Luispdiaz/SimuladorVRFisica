@@ -66,7 +66,7 @@ public class IndicadorFuerza : MonoBehaviour
             if (punta != null)
             {
                 // La punta se coloca al final: desde la base se recorre toda la longitud
-                punta.position = baseEsfera.position + (direccionNormalizada * longitudDeseada);
+                punta.position = baseEsfera.position + (direccionNormalizada * (longitudDeseada - 0.08f));
                 punta.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
             }
         }
