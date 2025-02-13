@@ -70,7 +70,8 @@ public class SumaDeCargas : MonoBehaviour
                 if (punta != null)
                 {
                     // 3. Posicionar punta en el extremo final real
-                    punta.localPosition = new Vector3(0, nuevaEscala.y * 2, 0); // Doble de la escala
+                    float posicionYPunta = (nuevaEscala.y * 2) - 0.072f;
+                    punta.localPosition = new Vector3(0, posicionYPunta, 0); // Doble de la escala
                 }
 
                 // 4. Longitud real = escala * 2 (por el pivote central)
