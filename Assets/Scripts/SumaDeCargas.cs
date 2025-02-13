@@ -5,35 +5,35 @@ public class SumaDeCargas : MonoBehaviour
 {
     public GameObject flechaPrefab;
     public List<GameObject> sensores = new List<GameObject>();
-    public Dictionary<GameObject, GameObject> flechasPorCarga = new Dictionary<GameObject, GameObject>();
+    public Dictionary<GameObject, GameObject> flechasPorFuente = new Dictionary<GameObject, GameObject>();
     private Dictionary<GameObject, Vector3> posicionesFinalesPorSensor = new Dictionary<GameObject, Vector3>();
 
     public float factorEscalaFuerza = 0.1f;
 
-    public void CrearOActualizarFlechaParaCarga(GameObject carga)
+    public void CrearOActualizarFlechaParaFuente(GameObject fuente)
     {
         GameObject flecha;
 
-        if (flechasPorCarga.TryGetValue(carga, out flecha))
+        if (flechasPorFuente.TryGetValue(fuente, out flecha))
         {
-            ActualizarFlecha(flecha, carga);
+            ActualizarFlecha(flecha, fuente);
         }
         else
         {
             flecha = Instantiate(flechaPrefab);
-            flechasPorCarga[carga] = flecha;
-            ActualizarFlecha(flecha, carga);
+            flechasPorFuente[fuente] = flecha;
+            ActualizarFlecha(flecha, fuente);
         }
     }
 
-    private GameObject ObtenerSensorMasCercano(GameObject carga)
+    private GameObject ObtenerSensorMasCercano(GameObject fuente)
     {
         GameObject nearestSensor = null;
         float minDistance = Mathf.Infinity;
 
         foreach (var sensor in sensores)
         {
-            float distance = Vector3.Distance(carga.transform.position, sensor.transform.position);
+            float distance = Vector3.Distance(fuente.transform.position, sensor.transform.position);
             if (distance < minDistance)
             {
                 minDistance = distance;
@@ -43,14 +43,25 @@ public class SumaDeCargas : MonoBehaviour
         return nearestSensor;
     }
 
-    private void ActualizarFlecha(GameObject flecha, GameObject carga)
+    private void ActualizarFlecha(GameObject flecha, GameObject fuente)
     {
-        GameObject sensor = ObtenerSensorMasCercano(carga);
-        Carga cargaScript = carga.GetComponent<Carga>();
+        GameObject sensor = ObtenerSensorMasCercano(fuente);
+        Carga cargaScript = fuente.GetComponent<Carga>();
+        LineaCarga lineaScript = fuente.GetComponent<LineaCarga>();
 
-        if (sensor != null && cargaScript != null)
+        if (sensor != null && (cargaScript != null || lineaScript != null))
         {
-            Vector3 direccionFuerza = CalcularFuerzaIndividual(carga, sensor.transform.position);
+            Vector3 direccionFuerza = Vector3.zero;
+
+            if (cargaScript != null)
+            {
+                direccionFuerza = CalcularFuerzaCarga(cargaScript, sensor.transform.position);
+            }
+            else if (lineaScript != null)
+            {
+                direccionFuerza = CalcularFuerzaLinea(lineaScript, sensor.transform.position);
+            }
+
             float magnitudFuerza = direccionFuerza.magnitude;
             float longitudFlecha = 0f;
 
@@ -59,68 +70,75 @@ public class SumaDeCargas : MonoBehaviour
 
             if (cuerpo != null)
             {
-                // 1. Calcular escala a MITAD de la longitud deseada (por el pivote central)
                 Vector3 nuevaEscala = cuerpo.localScale;
-                nuevaEscala.y = (magnitudFuerza * factorEscalaFuerza) * 0.5f; // <-- Mitad de la longitud real
+                nuevaEscala.y = (magnitudFuerza * factorEscalaFuerza) * 0.5f;
                 cuerpo.localScale = nuevaEscala;
-
-                // 2. Compensar posición (el cilindro crecerá el doble desde el centro)
-                cuerpo.localPosition = new Vector3(0, nuevaEscala.y, 0); // Mover solo 1/4 de la longitud total
+                cuerpo.localPosition = new Vector3(0, nuevaEscala.y, 0);
 
                 if (punta != null)
                 {
-                    // 3. Posicionar punta en el extremo final real
                     float posicionYPunta = (nuevaEscala.y * 2) - 0.073f;
-                    punta.localPosition = new Vector3(0, posicionYPunta, 0); // Doble de la escala
+                    punta.localPosition = new Vector3(0, posicionYPunta, 0);
                 }
 
-                // 4. Longitud real = escala * 2 (por el pivote central)
                 longitudFlecha = nuevaEscala.y * 2;
             }
 
             flecha.transform.rotation = Quaternion.LookRotation(direccionFuerza) * Quaternion.Euler(90, 0, 0);
 
-            Vector3 posicionInicial = posicionesFinalesPorSensor.ContainsKey(sensor) ?
-                                    posicionesFinalesPorSensor[sensor] :
-                                    sensor.transform.position;
+            Vector3 posicionInicial = posicionesFinalesPorSensor.ContainsKey(sensor)
+                                    ? posicionesFinalesPorSensor[sensor]
+                                    : sensor.transform.position;
 
             flecha.transform.position = posicionInicial;
             posicionesFinalesPorSensor[sensor] = posicionInicial + (direccionFuerza.normalized * longitudFlecha);
 
-            ActualizarColor(flecha, cargaScript.esPositiva ? Color.red : Color.blue);
+            ActualizarColor(flecha,
+                cargaScript != null
+                    ? (cargaScript.esPositiva ? Color.red : Color.blue)
+                    : (lineaScript.esPositiva ? Color.magenta : Color.cyan));
         }
     }
 
-    private Vector3 CalcularFuerzaIndividual(GameObject carga, Vector3 posicionSensor)
+    private Vector3 CalcularFuerzaCarga(Carga carga, Vector3 posicionSensor)
     {
-        Carga cargaScript = carga.GetComponent<Carga>();
         Vector3 direccion = posicionSensor - carga.transform.position;
         float distancia = direccion.magnitude;
 
         if (distancia > 0.01f)
         {
-            float fuerzaMagnitud = cargaScript.fuerza / Mathf.Pow(distancia, 2);
-            if (!cargaScript.esPositiva)
-            {
-                fuerzaMagnitud = -fuerzaMagnitud;
-            }
+            float fuerzaMagnitud = carga.fuerza / Mathf.Pow(distancia, 2);
+            if (!carga.esPositiva) fuerzaMagnitud *= -1;
             return fuerzaMagnitud * direccion.normalized;
         }
         return Vector3.zero;
     }
 
+    private Vector3 CalcularFuerzaLinea(LineaCarga linea, Vector3 posicionSensor)
+    {
+        Collider collider = linea.GetComponent<Collider>();
+        if (collider == null) return Vector3.zero;
+
+        Vector3 puntoMasCercano = collider.ClosestPoint(posicionSensor);
+        Vector3 direccion = posicionSensor - puntoMasCercano;
+        float distancia = direccion.magnitude;
+
+        if (distancia < 0.01f) return Vector3.zero;
+
+        float magnitud = linea.densidadCarga / distancia;
+        if (!linea.esPositiva) magnitud *= -1;
+
+        return magnitud * direccion.normalized;
+    }
+
     private void LateUpdate()
     {
-        // Reiniciar posiciones acumuladas cada frame
         posicionesFinalesPorSensor.Clear();
-
-        // Actualizar todas las flechas en orden de influencia
-        foreach (var par in flechasPorCarga)
+        foreach (var par in flechasPorFuente)
         {
             ActualizarFlecha(par.Value, par.Key);
         }
     }
-
 
     private void ActualizarColor(GameObject flecha, Color color)
     {
@@ -133,10 +151,10 @@ public class SumaDeCargas : MonoBehaviour
 
     public void EliminarTodasLasFlechas()
     {
-        foreach (var flecha in flechasPorCarga.Values)
+        foreach (var flecha in flechasPorFuente.Values)
         {
             Destroy(flecha);
         }
-        flechasPorCarga.Clear();
+        flechasPorFuente.Clear();
     }
 }

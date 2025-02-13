@@ -16660,16 +16660,16 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 1
+      - m_Target: {fileID: 11500000, guid: 7ea2f35e7890ad543ac39647cf43a024, type: 3}
+        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
+        m_MethodName: set_name
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: RecalcularLineasPunteadas
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &2014489594
@@ -17670,8 +17670,6 @@ GameObject:
   - component: {fileID: 2136638486}
   - component: {fileID: 2136638487}
   - component: {fileID: 2136638488}
-  - component: {fileID: 2136638490}
-  - component: {fileID: 2136638489}
   m_Layer: 0
   m_Name: CargaPuntualManager
   m_TagString: Untagged
@@ -17713,6 +17711,8 @@ MonoBehaviour:
   sumaDeCargasButton: {fileID: 65384162}
   closeButton: {fileID: 460786280}
   recalcularButton: {fileID: 2014489593}
+  insertarLineaPositivaBtn: {fileID: 717829806}
+  insertarLineaNegativaBtn: {fileID: 249359037}
   spawnPoint: {fileID: 365591358}
   cargaPositivaPrefab: {fileID: 8069956676135863939, guid: 02c389e4281839c42b1742cff1a5c103, type: 3}
   cargaNegativaPrefab: {fileID: 3345438392130300214, guid: 89001908cd3009b47b8ca888ed5ee877, type: 3}
@@ -17720,6 +17720,8 @@ MonoBehaviour:
   miniSpherePrefab: {fileID: 2877251215816945538, guid: 43abdaae7fc194f4e8186551e8c5c54d, type: 3}
   fuerzaSlider: {fileID: 1530457432}
   fuerzaText: {fileID: 86921985}
+  lineaCargaPositivaPrefab: {fileID: 9144462673293043558, guid: cf3bc5e1a1b23eb429e94daa8283c1e5, type: 3}
+  lineaCargaNegativaPrefab: {fileID: 6250406608809342033, guid: afd492f4c45a0cc49a48643c2634f7d4, type: 3}
 --- !u!114 &2136638487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17749,54 +17751,6 @@ MonoBehaviour:
   flechaPrefab: {fileID: 4590072261955715686, guid: 47e62594a5fd37b44b460f3bd4bfc46e, type: 3}
   sensores: []
   factorEscalaFuerza: 0.1
---- !u!135 &2136638489
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2136638483}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &2136638490
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2136638483}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!1 &2138702807
 GameObject:
   m_ObjectHideFlags: 0

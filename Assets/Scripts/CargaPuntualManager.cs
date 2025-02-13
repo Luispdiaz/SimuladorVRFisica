@@ -191,14 +191,17 @@ public class CargaPuntualManager : MonoBehaviour
 
     private Vector3 CalcularFuerzaLinea(GameObject linea, Vector3 posicionSensor, LineaCarga scriptLinea)
     {
-        // Dirección perpendicular más cercana a la línea
-        Vector3 puntoMasCercano = linea.GetComponent<Collider>().ClosestPoint(posicionSensor);
+        // Asegurar que la línea tiene collider
+        Collider collider = linea.GetComponent<Collider>();
+        if (collider == null) return Vector3.zero;
+
+        Vector3 puntoMasCercano = collider.ClosestPoint(posicionSensor);
         Vector3 direccion = posicionSensor - puntoMasCercano;
         float distancia = direccion.magnitude;
 
         if (distancia < 0.01f) return Vector3.zero;
 
-        // Campo eléctrico de línea infinita: E = (λ / (2πε₀r)) -> Simplificamos λ/(2πε₀) como "densidadCarga"
+        // Usar densidad de carga del script (asegúrate de que LineaCarga tenga esta variable)
         float magnitud = scriptLinea.densidadCarga / distancia;
         if (!scriptLinea.esPositiva) magnitud *= -1;
 
@@ -249,16 +252,20 @@ public class CargaPuntualManager : MonoBehaviour
     }
 
 
-
     public void CrearSumaDeCargas()
     {
-        // Update the list of sensors in SumaDeCargas
         sumaDeCargas.sensores = sensores;
 
-        // Create or update arrows for all charges
+        // Procesar cargas puntuales
         foreach (var carga in cargas)
         {
-            sumaDeCargas.CrearOActualizarFlechaParaCarga(carga);
+            sumaDeCargas.CrearOActualizarFlechaParaFuente(carga);
+        }
+
+        // Procesar líneas de carga
+        foreach (var linea in lineasCarga)
+        {
+            sumaDeCargas.CrearOActualizarFlechaParaFuente(linea);
         }
     }
     // Método para eliminar una carga
@@ -268,17 +275,28 @@ public class CargaPuntualManager : MonoBehaviour
         lineasPunteadas.EliminarLineasDeCarga(carga.transform);
 
         cargas.Remove(carga);
-        if (sumaDeCargas.flechasPorCarga.TryGetValue(carga, out var flecha))
+
+        // CAMBIA flechasPorCarga POR flechasPorFuente
+        if (sumaDeCargas.flechasPorFuente.TryGetValue(carga, out var flecha))
         {
             Destroy(flecha);
-            sumaDeCargas.flechasPorCarga.Remove(carga);
+            sumaDeCargas.flechasPorFuente.Remove(carga);
         }
         Destroy(carga);
     }
+
+    // Método para eliminar una línea de carga
     public void EliminarLineaCarga(GameObject linea)
     {
         lineasCarga.Remove(linea);
         lineasPunteadas.EliminarLineasDeCarga(linea.transform);
+
+        // Añade esto para eliminar su flecha asociada
+        if (sumaDeCargas.flechasPorFuente.TryGetValue(linea, out var flecha))
+        {
+            Destroy(flecha);
+            sumaDeCargas.flechasPorFuente.Remove(linea);
+        }
         Destroy(linea);
     }
 }
