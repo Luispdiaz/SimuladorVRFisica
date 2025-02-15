@@ -6,7 +6,6 @@ public class CargaPuntualManager : MonoBehaviour
 {
     // Referencias a UI y objetos
     public GameObject subMenuCarga; // Panel del submenú
-    public GameObject tituloSubMenu; // Título del submenú
     public Button insertarCargaPositivaBtn; // Botón para insertar carga positiva
     public Button insertarCargaNegativaBtn; // Botón para insertar carga negativa
     public Button botonSensor; // Botón para crear sensores (indicadores de fuerza)
@@ -20,8 +19,6 @@ public class CargaPuntualManager : MonoBehaviour
     public GameObject cargaNegativaPrefab; // Prefab de la carga negativa
     public GameObject indicadorFuerzaPrefab; // Prefab del indicador de fuerza
     public GameObject miniSpherePrefab; // Prefab de la mini esfera para las líneas punteadas
-    public Slider fuerzaSlider; // Slider para ajustar la fuerza de las cargas
-    public Text fuerzaText; // Texto para mostrar la fuerza actual del slider
     public GameObject lineaCargaPositivaPrefab;
     public GameObject lineaCargaNegativaPrefab;
 
@@ -33,9 +30,8 @@ public class CargaPuntualManager : MonoBehaviour
 
     private void Start()
     {
-        // Ocultar el submenú y el título al inicio
+        // Ocultar el submenú al inicio
         subMenuCarga.SetActive(false);
-        tituloSubMenu.SetActive(false);
 
         // Asignar funciones a los botones
         insertarCargaPositivaBtn.onClick.AddListener(IngresarCargaPositiva);
@@ -46,19 +42,6 @@ public class CargaPuntualManager : MonoBehaviour
         recalcularButton.onClick.AddListener(RecalcularLineasPunteadas); // Asignar la función de recalcular
         insertarLineaPositivaBtn.onClick.AddListener(IngresarLineaPositiva);
         insertarLineaNegativaBtn.onClick.AddListener(IngresarLineaNegativa);
-
-        // Asignar función al slider
-        fuerzaSlider.onValueChanged.AddListener(ActualizarTextoFuerza);
-
-        // Encontrar el texto hijo del slider e inicializarlo
-        fuerzaText = fuerzaSlider.GetComponentInChildren<Text>();
-        if (fuerzaText == null)
-        {
-            Debug.LogError("Text component not found inside the Slider.");
-            return;
-        }
-
-        ActualizarTextoFuerza(fuerzaSlider.value); // Actualizar el texto al inicio
 
         // Inicializar LineasPunteadas y SumaDeCargas
         lineasPunteadas = GetComponent<LineasPunteadas>();
@@ -93,23 +76,21 @@ public class CargaPuntualManager : MonoBehaviour
     public void MostrarSubMenuCargas()
     {
         subMenuCarga.SetActive(true);
-        tituloSubMenu.SetActive(true); // Mostrar el título
     }
 
     public void CerrarSubMenu()
     {
         subMenuCarga.SetActive(false);
-        tituloSubMenu.SetActive(false); // Ocultar el título
     }
 
     public void IngresarCargaPositiva()
     {
-        CrearCarga(cargaPositivaPrefab, fuerzaSlider.value, true);
+        CrearCarga(cargaPositivaPrefab, true);
     }
 
     public void IngresarCargaNegativa()
     {
-        CrearCarga(cargaNegativaPrefab, fuerzaSlider.value, false);
+        CrearCarga(cargaNegativaPrefab, false);
     }
 
     public void IngresarLineaPositiva()
@@ -130,16 +111,12 @@ public class CargaPuntualManager : MonoBehaviour
         lineasCarga.Add(nuevaLinea);
     }
 
-    private void CrearCarga(GameObject cargaPrefab, float fuerza, bool esPositiva)
+    private void CrearCarga(GameObject cargaPrefab, bool esPositiva)
     {
-        Debug.Log($"Creando carga con fuerza: {fuerza}"); // Registro de valor de fuerza
         GameObject nuevaCarga = Instantiate(cargaPrefab, spawnPoint.position, spawnPoint.rotation);
         Carga cargaScript = nuevaCarga.AddComponent<Carga>();
-        cargaScript.fuerza = fuerza;
         cargaScript.esPositiva = esPositiva;
         cargas.Add(nuevaCarga);
-
-        // Crear flecha para la nueva carga
     }
 
     private void CrearSensor()
@@ -212,18 +189,6 @@ public class CargaPuntualManager : MonoBehaviour
         return magnitud * direccion.normalized;
     }
 
-    private void ActualizarTextoFuerza(float nuevaFuerza)
-    {
-        if (fuerzaText != null)
-        {
-            fuerzaText.text = "Fuerza: " + nuevaFuerza.ToString("F2");
-        }
-        else
-        {
-            Debug.LogWarning("fuerzaText is null. Cannot update text.");
-        }
-    }
-
     private void ActualizarTextoFuerzaCarga(GameObject carga)
     {
         var cargaScript = carga.GetComponent<Carga>();
@@ -233,7 +198,6 @@ public class CargaPuntualManager : MonoBehaviour
             textComponent.text = cargaScript.fuerza.ToString("F2");
         }
     }
-
 
     private void RecalcularLineasPunteadas()
     {
@@ -255,7 +219,6 @@ public class CargaPuntualManager : MonoBehaviour
         }
     }
 
-
     public void CrearSumaDeCargas()
     {
         sumaDeCargas.sensores = sensores;
@@ -272,6 +235,7 @@ public class CargaPuntualManager : MonoBehaviour
             sumaDeCargas.CrearOActualizarFlechaParaFuente(linea);
         }
     }
+
     // Método para eliminar una carga
     public void EliminarCarga(GameObject carga)
     {
