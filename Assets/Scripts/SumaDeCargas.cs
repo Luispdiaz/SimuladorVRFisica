@@ -46,10 +46,9 @@ public class SumaDeCargas : MonoBehaviour
             List<GameObject> flechasDelSensor = new List<GameObject>();
             Vector3 posicionSensor = sensor.transform.position;
 
-            // 1. Recolectar todas las flechas y calcular sus posiciones finales reales
-            List<Vector3> posicionesFinales = new List<Vector3>();
-            Vector3 posicionAcumulada = posicionSensor;
-
+            // 1. Recolectar datos de las flechas (dirección y longitud)
+            List<Vector3> direcciones = new List<Vector3>();
+            List<float> longitudes = new List<float>();
             foreach (var fuente in flechasPorFuentePorSensor.Keys)
             {
                 if (flechasPorFuentePorSensor[fuente].TryGetValue(sensor, out GameObject flecha))
@@ -57,37 +56,43 @@ public class SumaDeCargas : MonoBehaviour
                     flechasDelSensor.Add(flecha);
                     FlechaData data = flecha.GetComponent<FlechaData>();
                     float longitud = flecha.transform.Find("Cuerpo").localScale.y * 2;
-
-                    // Posición FINAL real de cada flecha (punta de la anterior)
-                    Vector3 posFinal = posicionAcumulada + data.direccion * longitud;
-                    posicionesFinales.Add(posFinal);
-                    posicionAcumulada = posFinal;
+                    direcciones.Add(data.direccion.normalized); // Dirección normalizada
+                    longitudes.Add(longitud); // Longitud del vector
                 }
             }
 
-            // 2. Resetear todas las flechas al SENSOR
+            // 2. Calcular posiciones finales acumuladas
+            List<Vector3> posicionesFinales = new List<Vector3>();
+            Vector3 acumulador = Vector3.zero; // Acumula el desplazamiento total
+            for (int i = 0; i < direcciones.Count; i++)
+            {
+                acumulador += direcciones[i] * longitudes[i]; // Suma vectorial
+                posicionesFinales.Add(posicionSensor + acumulador);
+            }
+
+            // 3. Resetear todas las flechas al sensor
             foreach (var flecha in flechasDelSensor)
             {
                 flecha.transform.position = posicionSensor;
             }
 
-            // 3. Animar secuencialmente
-            for (int i = 0; i < flechasDelSensor.Count; i++)
+            // 4. Animar secuencialmente desde el sensor
+            for (int i = 1; i < flechasDelSensor.Count; i++)
             {
                 GameObject flecha = flechasDelSensor[i];
-                Vector3 inicio = posicionSensor; // Todas inician en el sensor
-                Vector3 fin = posicionesFinales[i]; // Terminan en la punta acumulada
+                Vector3 fin = posicionesFinales[i-1];
 
-                // Solo la primera flecha está estática
                 if (i == 0)
                 {
-                    flecha.transform.position = fin; // Posición final sin animación
+                    // Primera flecha estática
+                    flecha.transform.position = fin;
                 }
                 else
                 {
+                    // Flechas posteriores: animar desde el sensor hasta la posición acumulada
                     yield return StartCoroutine(AnimarFlecha(
                         flecha.transform,
-                        inicio,
+                        posicionSensor, // Siempre inician en el sensor
                         fin,
                         flecha.transform.rotation
                     ));

@@ -16,7 +16,8 @@ public class CargaPuntualManager : MonoBehaviour
     public Button recalcularButton; // Botón para recalcular (Dirección por Carga)
     public Button insertarLineaPositivaBtn; // Botón para línea positiva
     public Button insertarLineaNegativaBtn; // Botón para línea negativa
-    public Button animarSumaButton;
+    public Button botonSensorVoltaje; // Nuevo botón en el inspector
+    public GameObject sensorVoltajePrefab; // Asigna el prefab en el inspector
     public Transform spawnPoint; // Punto de aparición de las cargas e indicadores
     public GameObject cargaPositivaPrefab; // Prefab de la carga positiva
     public GameObject cargaNegativaPrefab; // Prefab de la carga negativa
@@ -29,6 +30,8 @@ public class CargaPuntualManager : MonoBehaviour
     private List<GameObject> lineasCarga = new List<GameObject>(); // Líneas de carga
     private List<GameObject> cargas = new List<GameObject>(); // Cargas
     private List<GameObject> sensores = new List<GameObject>(); // Sensores creados
+    public List<GameObject> Cargas => cargas;
+    public List<GameObject> LineasCarga => lineasCarga;
     private LineasPunteadas lineasPunteadas;
     private SumaDeCargas sumaDeCargas; // Para SumaDeCargas (actualizada)
     private VectoresDesdeSensor vectoresDesdeSensor; // Para VectoresDesdeSensor
@@ -55,7 +58,7 @@ public class CargaPuntualManager : MonoBehaviour
         recalcularButton.onClick.AddListener(RecalcularLineasPunteadasToggle);
         insertarLineaPositivaBtn.onClick.AddListener(IngresarLineaPositiva);
         insertarLineaNegativaBtn.onClick.AddListener(IngresarLineaNegativa);
-        animarSumaButton.onClick.AddListener(IniciarAnimacionSuma);
+        botonSensorVoltaje.onClick.AddListener(() => CrearSensorVoltaje());
 
         lineasPunteadas = GetComponent<LineasPunteadas>();
         if (lineasPunteadas == null)
@@ -83,6 +86,7 @@ public class CargaPuntualManager : MonoBehaviour
         foreach (var sensor in sensores)
         {
             ActualizarSensor(sensor);
+            ActualizarVoltajeSensor(sensor); // Nuevo método para voltaje
         }
 
         // Actualizar la fuerza mostrada de cada carga
@@ -95,6 +99,15 @@ public class CargaPuntualManager : MonoBehaviour
         if (cargas.Count > 0 || lineasCarga.Count > 0)
         {
             ActualizarFlechas();
+        }
+    }
+    // Nuevo método para actualizar el voltaje
+    private void ActualizarVoltajeSensor(GameObject sensor)
+    {
+        VoltageSensor voltageScript = sensor.GetComponent<VoltageSensor>();
+        if (voltageScript != null)
+        {
+            voltageScript.ActualizarVoltaje();
         }
     }
 
@@ -159,12 +172,6 @@ public class CargaPuntualManager : MonoBehaviour
     {
         CrearLineaCarga(lineaCargaNegativaPrefab, false);
     }
-    public void IniciarAnimacionSuma()
-    {
-        // Activar modo suma y desactivar otros modos
-        if (!turnoSumaDeCargasActivo) CrearSumaDeCargas();
-        sumaDeCargas.IniciarAnimacionSuma();
-    }
 
     private void CrearLineaCarga(GameObject prefab, bool esPositiva)
     {
@@ -190,6 +197,11 @@ public class CargaPuntualManager : MonoBehaviour
         IndicadorFuerza indicadorScript = nuevoSensor.AddComponent<IndicadorFuerza>();
         ActualizarSensor(nuevoSensor);
         sensores.Add(nuevoSensor);
+    }
+    private void CrearSensorVoltaje()
+    {
+        GameObject nuevoSensor = Instantiate(sensorVoltajePrefab, spawnPoint.position, Quaternion.identity);
+        sensores.Add(nuevoSensor); // Añade el sensor a la lista para que se actualice
     }
 
     private void ActualizarSensor(GameObject sensor)
