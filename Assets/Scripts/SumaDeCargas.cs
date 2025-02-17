@@ -1,103 +1,219 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
+using System.Linq;
+
+// Nuevo componente para almacenar la dirección original
+public class FlechaData : MonoBehaviour
+{
+    public Vector3 direccion;
+}
+
 
 public class SumaDeCargas : MonoBehaviour
 {
     public GameObject flechaPrefab;
+    // Lista de sensores (deben tener el tag "sensor detalle")
     public List<GameObject> sensores = new List<GameObject>();
-    public Dictionary<GameObject, GameObject> flechasPorFuente = new Dictionary<GameObject, GameObject>();
+    // Ahora, para cada fuente (carga o línea) se guarda un diccionario que asocia cada sensor a su flecha
+    public Dictionary<GameObject, Dictionary<GameObject, GameObject>> flechasPorFuentePorSensor = new Dictionary<GameObject, Dictionary<GameObject, GameObject>>();
+    // Para llevar un seguimiento de la posición final de la flecha para cada sensor
     private Dictionary<GameObject, Vector3> posicionesFinalesPorSensor = new Dictionary<GameObject, Vector3>();
 
     public float factorEscalaFuerza = 0.1f;
+    [Header("Animación")]
+    public float duracionAnimacion = 3.0f;
+    public float retardoEntreFlechas = 0.5f;
+    private bool animacionEnCurso = false;
+    private bool animacionActiva = false; // Nuevo flag
 
-    public void CrearOActualizarFlechaParaFuente(GameObject fuente)
+    public void IniciarAnimacionSuma()
     {
-        GameObject flecha;
-
-        if (flechasPorFuente.TryGetValue(fuente, out flecha))
+        if (!animacionEnCurso)
         {
-            ActualizarFlecha(flecha, fuente);
-        }
-        else
-        {
-            flecha = Instantiate(flechaPrefab);
-            flechasPorFuente[fuente] = flecha;
-            ActualizarFlecha(flecha, fuente);
+            StartCoroutine(AnimacionSumaCoroutine());
         }
     }
-
-    private GameObject ObtenerSensorMasCercano(GameObject fuente)
+    private IEnumerator AnimacionSumaCoroutine()
     {
-        GameObject nearestSensor = null;
-        float minDistance = Mathf.Infinity;
+        animacionEnCurso = true;
+        animacionActiva = true;
 
-        foreach (var sensor in sensores)
+        foreach (GameObject sensor in sensores)
         {
-            float distance = Vector3.Distance(fuente.transform.position, sensor.transform.position);
-            if (distance < minDistance)
+            if (!sensor.CompareTag("sensor detalle")) continue;
+
+            List<GameObject> flechasDelSensor = new List<GameObject>();
+            Vector3 posicionSensor = sensor.transform.position;
+
+            // 1. Recolectar todas las flechas y calcular sus posiciones finales reales
+            List<Vector3> posicionesFinales = new List<Vector3>();
+            Vector3 posicionAcumulada = posicionSensor;
+
+            foreach (var fuente in flechasPorFuentePorSensor.Keys)
             {
-                minDistance = distance;
-                nearestSensor = sensor;
+                if (flechasPorFuentePorSensor[fuente].TryGetValue(sensor, out GameObject flecha))
+                {
+                    flechasDelSensor.Add(flecha);
+                    FlechaData data = flecha.GetComponent<FlechaData>();
+                    float longitud = flecha.transform.Find("Cuerpo").localScale.y * 2;
+
+                    // Posición FINAL real de cada flecha (punta de la anterior)
+                    Vector3 posFinal = posicionAcumulada + data.direccion * longitud;
+                    posicionesFinales.Add(posFinal);
+                    posicionAcumulada = posFinal;
+                }
+            }
+
+            // 2. Resetear todas las flechas al SENSOR
+            foreach (var flecha in flechasDelSensor)
+            {
+                flecha.transform.position = posicionSensor;
+            }
+
+            // 3. Animar secuencialmente
+            for (int i = 0; i < flechasDelSensor.Count; i++)
+            {
+                GameObject flecha = flechasDelSensor[i];
+                Vector3 inicio = posicionSensor; // Todas inician en el sensor
+                Vector3 fin = posicionesFinales[i]; // Terminan en la punta acumulada
+
+                // Solo la primera flecha está estática
+                if (i == 0)
+                {
+                    flecha.transform.position = fin; // Posición final sin animación
+                }
+                else
+                {
+                    yield return StartCoroutine(AnimarFlecha(
+                        flecha.transform,
+                        inicio,
+                        fin,
+                        flecha.transform.rotation
+                    ));
+                }
             }
         }
-        return nearestSensor;
+
+        animacionActiva = false;
+        animacionEnCurso = false;
     }
 
-    private void ActualizarFlecha(GameObject flecha, GameObject fuente)
+    private IEnumerator AnimarFlecha(Transform flecha, Vector3 inicio, Vector3 fin, Quaternion rotacion)
     {
-        GameObject sensor = ObtenerSensorMasCercano(fuente);
+        float tiempo = 0;
+
+        // Mantener rotación fija durante la animación
+        flecha.rotation = rotacion;
+
+        while (tiempo < duracionAnimacion)
+        {
+            float t = Mathf.SmoothStep(0f, 1f, tiempo / duracionAnimacion);
+            flecha.position = Vector3.Lerp(inicio, fin, t);
+            tiempo += Time.deltaTime;
+            yield return null;
+        }
+
+        flecha.position = fin;
+    }
+    /// <summary>
+    /// Crea o actualiza las flechas para la fuente en todos los sensores detalle.
+    /// </summary>
+    public void CrearOActualizarFlechaParaFuente(GameObject fuente)
+    {
+        // Iteramos sobre todos los sensores
+        foreach (GameObject sensor in sensores)
+        {
+            // Solo consideramos sensores con el tag "sensor detalle"
+            if (!sensor.CompareTag("sensor detalle"))
+                continue;
+
+            // Si no existe entrada para esta fuente, la creamos
+            if (!flechasPorFuentePorSensor.ContainsKey(fuente))
+            {
+                flechasPorFuentePorSensor[fuente] = new Dictionary<GameObject, GameObject>();
+            }
+            Dictionary<GameObject, GameObject> flechasPorSensor = flechasPorFuentePorSensor[fuente];
+
+            GameObject flecha;
+            if (flechasPorSensor.TryGetValue(sensor, out flecha))
+            {
+                ActualizarFlechaParaSensor(sensor, fuente, flecha);
+            }
+            else
+            {
+                flecha = Instantiate(flechaPrefab);
+                flechasPorSensor[sensor] = flecha;
+                ActualizarFlechaParaSensor(sensor, fuente, flecha);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Actualiza la flecha para un sensor específico y una fuente dada.
+    /// </summary>
+    private void ActualizarFlechaParaSensor(GameObject sensor, GameObject fuente, GameObject flecha)
+    {
+        // Verificamos que la fuente tenga componente Carga o LineaCarga
         Carga cargaScript = fuente.GetComponent<Carga>();
         LineaCarga lineaScript = fuente.GetComponent<LineaCarga>();
 
-        if (sensor != null && (cargaScript != null || lineaScript != null))
+        if (cargaScript == null && lineaScript == null)
+            return;
+
+        // Calcular la dirección de la fuerza desde la fuente respecto a la posición del sensor
+        Vector3 direccionFuerza = Vector3.zero;
+        if (cargaScript != null)
         {
-            Vector3 direccionFuerza = Vector3.zero;
+            direccionFuerza = CalcularFuerzaCarga(cargaScript, sensor.transform.position);
+        }
+        else if (lineaScript != null)
+        {
+            direccionFuerza = CalcularFuerzaLinea(lineaScript, sensor.transform.position);
+        }
 
-            if (cargaScript != null)
+        float magnitudFuerza = direccionFuerza.magnitude;
+        float longitudFlecha = 0f;
+
+        // Ajustar escala y posición de las partes de la flecha
+        Transform cuerpo = flecha.transform.Find("Cuerpo");
+        Transform punta = flecha.transform.Find("Punta");
+
+        if (cuerpo != null)
+        {
+            Vector3 nuevaEscala = cuerpo.localScale;
+            nuevaEscala.y = (magnitudFuerza * factorEscalaFuerza) * 0.5f;
+            cuerpo.localScale = nuevaEscala;
+            cuerpo.localPosition = new Vector3(0, nuevaEscala.y, 0);
+
+            if (punta != null)
             {
-                direccionFuerza = CalcularFuerzaCarga(cargaScript, sensor.transform.position);
-            }
-            else if (lineaScript != null)
-            {
-                direccionFuerza = CalcularFuerzaLinea(lineaScript, sensor.transform.position);
-            }
-
-            float magnitudFuerza = direccionFuerza.magnitude;
-            float longitudFlecha = 0f;
-
-            Transform cuerpo = flecha.transform.Find("Cuerpo");
-            Transform punta = flecha.transform.Find("Punta");
-
-            if (cuerpo != null)
-            {
-                Vector3 nuevaEscala = cuerpo.localScale;
-                nuevaEscala.y = (magnitudFuerza * factorEscalaFuerza) * 0.5f;
-                cuerpo.localScale = nuevaEscala;
-                cuerpo.localPosition = new Vector3(0, nuevaEscala.y, 0);
-
-                if (punta != null)
-                {
-                    float posicionYPunta = (nuevaEscala.y * 2) - 0.073f;
-                    punta.localPosition = new Vector3(0, posicionYPunta, 0);
-                }
-
-                longitudFlecha = nuevaEscala.y * 2;
+                float posicionYPunta = (nuevaEscala.y * 2) - 0.073f;
+                punta.localPosition = new Vector3(0, posicionYPunta, 0);
             }
 
-            flecha.transform.rotation = Quaternion.LookRotation(direccionFuerza) * Quaternion.Euler(90, 0, 0);
+            longitudFlecha = nuevaEscala.y * 2;
+        }
 
-            Vector3 posicionInicial = posicionesFinalesPorSensor.ContainsKey(sensor)
+        // Establecer la rotación de la flecha
+        flecha.transform.rotation = Quaternion.LookRotation(direccionFuerza) * Quaternion.Euler(90, 0, 0);
+
+        // Utilizar una posición inicial para la flecha basada en el sensor
+        Vector3 posicionInicial = posicionesFinalesPorSensor.ContainsKey(sensor)
                                     ? posicionesFinalesPorSensor[sensor]
                                     : sensor.transform.position;
+        // Actualizar la posición final para este sensor
+        posicionesFinalesPorSensor[sensor] = posicionInicial + (direccionFuerza.normalized * longitudFlecha);
 
-            flecha.transform.position = posicionInicial;
-            posicionesFinalesPorSensor[sensor] = posicionInicial + (direccionFuerza.normalized * longitudFlecha);
+        FlechaData data = flecha.GetComponent<FlechaData>();
+        if (data == null) data = flecha.AddComponent<FlechaData>();
+        data.direccion = direccionFuerza.normalized;
 
-            ActualizarColor(flecha,
-                cargaScript != null
-                    ? (cargaScript.esPositiva ? Color.red : Color.blue)
-                    : (lineaScript.esPositiva ? Color.magenta : Color.cyan));
-        }
+        // Actualizar el color de la flecha según el tipo de carga o línea
+        ActualizarColor(flecha,
+            cargaScript != null
+                ? (cargaScript.esPositiva ? Color.red : Color.blue)
+                : (lineaScript.esPositiva ? Color.magenta : Color.cyan));
     }
 
     private Vector3 CalcularFuerzaCarga(Carga carga, Vector3 posicionSensor)
@@ -131,12 +247,24 @@ public class SumaDeCargas : MonoBehaviour
         return magnitud * direccion.normalized;
     }
 
+    /// <summary>
+    /// Se actualizan todas las flechas para todas las fuentes y sensores.
+    /// </summary>
     private void LateUpdate()
     {
+        if (animacionActiva) return;
+
         posicionesFinalesPorSensor.Clear();
-        foreach (var par in flechasPorFuente)
+        foreach (var fuenteEntry in flechasPorFuentePorSensor)
         {
-            ActualizarFlecha(par.Value, par.Key);
+            GameObject fuente = fuenteEntry.Key;
+            Dictionary<GameObject, GameObject> flechasPorSensor = fuenteEntry.Value;
+            foreach (var sensorEntry in flechasPorSensor)
+            {
+                GameObject sensor = sensorEntry.Key;
+                GameObject flecha = sensorEntry.Value;
+                ActualizarFlechaParaSensor(sensor, fuente, flecha);
+            }
         }
     }
 
@@ -151,10 +279,27 @@ public class SumaDeCargas : MonoBehaviour
 
     public void EliminarTodasLasFlechas()
     {
-        foreach (var flecha in flechasPorFuente.Values)
+        List<GameObject> flechasAEliminar = new List<GameObject>();
+        foreach (var fuenteEntry in flechasPorFuentePorSensor)
         {
-            Destroy(flecha);
+            foreach (var sensorEntry in fuenteEntry.Value)
+            {
+                if (sensorEntry.Value != null && sensorEntry.Value.activeInHierarchy)
+                {
+                    flechasAEliminar.Add(sensorEntry.Value);
+                }
+            }
         }
-        flechasPorFuente.Clear();
+        flechasPorFuentePorSensor.Clear();
+
+        foreach (var flecha in flechasAEliminar)
+        {
+            if (flecha != null)
+            {
+                // Se desactiva y luego se destruye
+                flecha.SetActive(false);
+                Destroy(flecha);
+            }
+        }
     }
 }

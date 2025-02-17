@@ -1,10 +1,12 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class LineasPunteadas : MonoBehaviour
 {
     public GameObject miniSpherePrefab;
     public int numberOfPoints = 30;
+    public float delayTime = 2f; // Delay entre la creación de cada punto
 
     // Clase para almacenar la información de cada línea
     private class Linea
@@ -18,10 +20,12 @@ public class LineasPunteadas : MonoBehaviour
 
     public void CrearLineasPunteadas(Transform start, Transform end)
     {
-        // Eliminar líneas existentes entre estos mismos objetos
+        // Solo crear la línea si el 'end' es un sensor detalle
+        if (!end.CompareTag("sensor detalle")) return;
+
+        // Eliminar cualquier línea existente entre estos mismos objetos
         EliminarLinea(start, end);
 
-        // Crear nueva línea
         Linea nuevaLinea = new Linea
         {
             start = start,
@@ -29,23 +33,25 @@ public class LineasPunteadas : MonoBehaviour
             puntos = new List<GameObject>()
         };
 
-        // Generar puntos iniciales
+        lineas.Add(nuevaLinea);
+        StartCoroutine(CrearPuntosConDelay(nuevaLinea));
+    }
+
+    private IEnumerator CrearPuntosConDelay(Linea linea)
+    {
         for (int i = 0; i <= numberOfPoints; i++)
         {
             GameObject punto = Instantiate(miniSpherePrefab);
-            nuevaLinea.puntos.Add(punto);
+            linea.puntos.Add(punto);
+            yield return new WaitForSeconds(delayTime);
         }
-
-        lineas.Add(nuevaLinea);
     }
 
     private void EliminarLinea(Transform start, Transform end)
     {
-        // Buscar y eliminar líneas existentes entre estos transforms
         lineas.RemoveAll(linea =>
         {
-            if ((linea.start == start && linea.end == end) ||
-                (linea.start == end && linea.end == start))
+            if ((linea.start == start && linea.end == end) || (linea.start == end && linea.end == start))
             {
                 foreach (GameObject punto in linea.puntos)
                 {
@@ -59,27 +65,39 @@ public class LineasPunteadas : MonoBehaviour
 
     void Update()
     {
-        // Actualizar todas las líneas cada frame
+        // Actualiza la posición de cada punto en todas las líneas cada frame
         foreach (Linea linea in lineas)
         {
             if (linea.start == null || linea.end == null) continue;
 
+            // Para las cargas (punto) se utiliza directamente la posición del transform.
+            // Para otros objetos (por ejemplo, cilindros), se usa el collider para obtener el punto más cercano.
+            Vector3 startPoint;
+            if (linea.start.GetComponent<Carga>() != null)
+            {
+                startPoint = linea.start.position;
+            }
+            else
+            {
+                Collider col = linea.start.GetComponent<Collider>();
+                if (col != null)
+                    startPoint = col.ClosestPoint(linea.end.position);
+                else
+                    startPoint = linea.start.position;
+            }
+
             for (int i = 0; i <= numberOfPoints; i++)
             {
                 float t = (float)i / numberOfPoints;
-                Vector3 posicion = Vector3.Lerp(
-                    linea.start.position,
-                    linea.end.position,
-                    t
-                );
-                linea.puntos[i].transform.position = posicion;
+                Vector3 posicion = Vector3.Lerp(startPoint, linea.end.position, t);
+                if (i < linea.puntos.Count && linea.puntos[i] != null)
+                    linea.puntos[i].transform.position = posicion;
             }
         }
     }
 
     public void EliminarLineasDeCarga(Transform carga)
     {
-        // Eliminar todas las líneas asociadas a una carga
         lineas.RemoveAll(linea =>
         {
             if (linea.start == carga || linea.end == carga)
@@ -93,6 +111,7 @@ public class LineasPunteadas : MonoBehaviour
             return false;
         });
     }
+
     public void EliminarTodasLasLineas()
     {
         foreach (Linea linea in lineas)

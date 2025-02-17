@@ -65,7 +65,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4c28d995d58e42f47b31c5d7e5c3a368, type: 2}
+  - {fileID: 2100000, guid: c1266add4847ed540b8443c66e18b2fb, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -481,7 +481,7 @@ GameObject:
   - component: {fileID: -5995522370990213743}
   - component: {fileID: 1350816939557007268}
   m_Layer: 0
-  m_Name: IndicadorFuerzaGeneral
+  m_Name: IndicadorFuerzaGeneral Tag
   m_TagString: Destructible
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

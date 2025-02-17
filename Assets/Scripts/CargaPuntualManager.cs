@@ -8,42 +8,55 @@ public class CargaPuntualManager : MonoBehaviour
     public GameObject subMenuCarga; // Panel del submenú
     public Button insertarCargaPositivaBtn; // Botón para insertar carga positiva
     public Button insertarCargaNegativaBtn; // Botón para insertar carga negativa
-    public Button botonSensor; // Botón para crear sensores (indicadores de fuerza)
+    public Button botonSensorDetalle; // Botón para crear sensor de detalle
+    public Button botonSensorSuma; // Botón para crear sensor de suma
     public Button sumaDeCargasButton; // Botón para crear la suma de cargas
+    public Button vectoresDesdeSensorButton; // Botón para vectores desde el sensor
     public Button closeButton; // Botón para cerrar el submenú
-    public Button recalcularButton; // Botón para recalcular las mini esferas
+    public Button recalcularButton; // Botón para recalcular (Dirección por Carga)
     public Button insertarLineaPositivaBtn; // Botón para línea positiva
     public Button insertarLineaNegativaBtn; // Botón para línea negativa
+    public Button animarSumaButton;
     public Transform spawnPoint; // Punto de aparición de las cargas e indicadores
     public GameObject cargaPositivaPrefab; // Prefab de la carga positiva
     public GameObject cargaNegativaPrefab; // Prefab de la carga negativa
-    public GameObject indicadorFuerzaPrefab; // Prefab del indicador de fuerza
+    public GameObject indicadorFuerzaPrefab; // Prefab del indicador de fuerza (sensor suma)
+    public GameObject indicadorFuerzaDetallePrefab; // Prefab para el sensor de detalle
     public GameObject miniSpherePrefab; // Prefab de la mini esfera para las líneas punteadas
     public GameObject lineaCargaPositivaPrefab;
     public GameObject lineaCargaNegativaPrefab;
 
-    private List<GameObject> lineasCarga = new List<GameObject>(); // Lista de líneas de carga
-    private List<GameObject> cargas = new List<GameObject>(); // Lista para almacenar las cargas
-    private List<GameObject> sensores = new List<GameObject>(); // Lista para almacenar los sensores creados
+    private List<GameObject> lineasCarga = new List<GameObject>(); // Líneas de carga
+    private List<GameObject> cargas = new List<GameObject>(); // Cargas
+    private List<GameObject> sensores = new List<GameObject>(); // Sensores creados
     private LineasPunteadas lineasPunteadas;
-    private SumaDeCargas sumaDeCargas; // Nueva referencia para SumaDeCargas
+    private SumaDeCargas sumaDeCargas; // Para SumaDeCargas (actualizada)
+    private VectoresDesdeSensor vectoresDesdeSensor; // Para VectoresDesdeSensor
+
+    // Banderas para SumaDeCargas y VectoresDesdeSensor (lógica clásica)
+    private bool turnoSumaDeCargasActivo = false;
+    private bool turnoVectoresDesdeSensorActivo = false;
+
+    // Banderas y contador para Recalcular (toggle con sensor count)
+    private bool modoRecalcularActivo = false;
+    private int lastSensorCountRecalcular = 0;
 
     private void Start()
     {
-        // Ocultar el submenú al inicio
         subMenuCarga.SetActive(false);
 
-        // Asignar funciones a los botones
         insertarCargaPositivaBtn.onClick.AddListener(IngresarCargaPositiva);
         insertarCargaNegativaBtn.onClick.AddListener(IngresarCargaNegativa);
-        botonSensor.onClick.AddListener(CrearSensor);
-        sumaDeCargasButton.onClick.AddListener(CrearSumaDeCargas); // Asignar la función de suma de cargas
+        botonSensorDetalle.onClick.AddListener(() => CrearSensor("sensor detalle", indicadorFuerzaDetallePrefab));
+        botonSensorSuma.onClick.AddListener(() => CrearSensor("sensor suma", indicadorFuerzaPrefab));
+        sumaDeCargasButton.onClick.AddListener(CrearSumaDeCargas);
+        vectoresDesdeSensorButton.onClick.AddListener(CrearVectoresDesdeSensor);
         closeButton.onClick.AddListener(CerrarSubMenu);
-        recalcularButton.onClick.AddListener(RecalcularLineasPunteadas); // Asignar la función de recalcular
+        recalcularButton.onClick.AddListener(RecalcularLineasPunteadasToggle);
         insertarLineaPositivaBtn.onClick.AddListener(IngresarLineaPositiva);
         insertarLineaNegativaBtn.onClick.AddListener(IngresarLineaNegativa);
+        animarSumaButton.onClick.AddListener(IniciarAnimacionSuma);
 
-        // Inicializar LineasPunteadas y SumaDeCargas
         lineasPunteadas = GetComponent<LineasPunteadas>();
         if (lineasPunteadas == null)
         {
@@ -56,20 +69,64 @@ public class CargaPuntualManager : MonoBehaviour
         {
             sumaDeCargas = gameObject.AddComponent<SumaDeCargas>();
         }
+
+        vectoresDesdeSensor = GetComponent<VectoresDesdeSensor>();
+        if (vectoresDesdeSensor == null)
+        {
+            vectoresDesdeSensor = gameObject.AddComponent<VectoresDesdeSensor>();
+        }
     }
 
     private void Update()
     {
-        // Actualizar la dirección y rotación de todos los sensores
+        // Actualizar dirección y rotación de cada sensor
         foreach (var sensor in sensores)
         {
             ActualizarSensor(sensor);
         }
 
-        // Actualizar la fuerza mostrada de todas las cargas
+        // Actualizar la fuerza mostrada de cada carga
         foreach (var carga in cargas)
         {
             ActualizarTextoFuerzaCarga(carga);
+        }
+
+        // Actualizar flechas o líneas según el modo activo (solo se actualiza el conjunto activo)
+        if (cargas.Count > 0 || lineasCarga.Count > 0)
+        {
+            ActualizarFlechas();
+        }
+    }
+
+    /// <summary>
+    /// Actualiza las flechas según la bandera:
+    /// - Si SumaDeCargas está activa, se actualizan solo sus flechas.
+    /// - Si VectoresDesdeSensor está activa, se actualizan solo sus flechas.
+    /// - Si ninguno está activo, no se actualiza nada.
+    /// </summary>
+    private void ActualizarFlechas()
+    {
+        if (turnoSumaDeCargasActivo)
+        {
+            foreach (var carga in cargas)
+            {
+                sumaDeCargas.CrearOActualizarFlechaParaFuente(carga);
+            }
+            foreach (var linea in lineasCarga)
+            {
+                sumaDeCargas.CrearOActualizarFlechaParaFuente(linea);
+            }
+        }
+        else if (turnoVectoresDesdeSensorActivo)
+        {
+            foreach (var carga in cargas)
+            {
+                vectoresDesdeSensor.CrearOActualizarFlechaParaFuente(carga);
+            }
+            foreach (var linea in lineasCarga)
+            {
+                vectoresDesdeSensor.CrearOActualizarFlechaParaFuente(linea);
+            }
         }
     }
 
@@ -102,6 +159,12 @@ public class CargaPuntualManager : MonoBehaviour
     {
         CrearLineaCarga(lineaCargaNegativaPrefab, false);
     }
+    public void IniciarAnimacionSuma()
+    {
+        // Activar modo suma y desactivar otros modos
+        if (!turnoSumaDeCargasActivo) CrearSumaDeCargas();
+        sumaDeCargas.IniciarAnimacionSuma();
+    }
 
     private void CrearLineaCarga(GameObject prefab, bool esPositiva)
     {
@@ -119,10 +182,11 @@ public class CargaPuntualManager : MonoBehaviour
         cargas.Add(nuevaCarga);
     }
 
-    private void CrearSensor()
+    private void CrearSensor(string tagSensor, GameObject prefabSensor)
     {
-        Debug.Log("Creando sensor");
-        GameObject nuevoSensor = Instantiate(indicadorFuerzaPrefab, spawnPoint.position, spawnPoint.rotation);
+        Debug.Log($"Creando sensor con tag: {tagSensor}");
+        GameObject nuevoSensor = Instantiate(prefabSensor, spawnPoint.position, spawnPoint.rotation);
+        nuevoSensor.tag = tagSensor;
         IndicadorFuerza indicadorScript = nuevoSensor.AddComponent<IndicadorFuerza>();
         ActualizarSensor(nuevoSensor);
         sensores.Add(nuevoSensor);
@@ -148,19 +212,18 @@ public class CargaPuntualManager : MonoBehaviour
             {
                 Vector3 direccion = posicionSensor - carga.transform.position;
                 float distancia = direccion.magnitude;
-                if (distancia > 0.01f) // Evitar división por cero
+                if (distancia > 0.01f)
                 {
                     float fuerzaMagnitud = cargaScript.fuerza / Mathf.Pow(distancia, 2);
                     if (!cargaScript.esPositiva)
                     {
-                        fuerzaMagnitud = -fuerzaMagnitud; // Invertir la fuerza para cargas negativas
+                        fuerzaMagnitud = -fuerzaMagnitud;
                     }
                     Vector3 fuerza = fuerzaMagnitud * direccion.normalized;
                     fuerzaTotal += fuerza;
                 }
             }
         }
-        // Fuerza de líneas de carga
         foreach (GameObject linea in lineasCarga)
         {
             LineaCarga scriptLinea = linea.GetComponent<LineaCarga>();
@@ -172,7 +235,6 @@ public class CargaPuntualManager : MonoBehaviour
 
     private Vector3 CalcularFuerzaLinea(GameObject linea, Vector3 posicionSensor, LineaCarga scriptLinea)
     {
-        // Asegurar que la línea tiene collider
         Collider collider = linea.GetComponent<Collider>();
         if (collider == null) return Vector3.zero;
 
@@ -182,7 +244,6 @@ public class CargaPuntualManager : MonoBehaviour
 
         if (distancia < 0.01f) return Vector3.zero;
 
-        // Usar densidad de carga del script (asegúrate de que LineaCarga tenga esta variable)
         float magnitud = scriptLinea.densidadCarga / distancia;
         if (!scriptLinea.esPositiva) magnitud *= -1;
 
@@ -199,56 +260,153 @@ public class CargaPuntualManager : MonoBehaviour
         }
     }
 
-    private void RecalcularLineasPunteadas()
+    // Método helper para contar sensores con tag "sensor detalle"
+    private int CountSensorsDetalle()
     {
-        lineasPunteadas.EliminarTodasLasLineas();
-
+        int count = 0;
         foreach (var sensor in sensores)
         {
-            // Líneas entre cargas puntuales y sensores
-            foreach (var carga in cargas)
-            {
-                lineasPunteadas.CrearLineasPunteadas(carga.transform, sensor.transform);
-            }
+            if (sensor.CompareTag("sensor detalle"))
+                count++;
+        }
+        return count;
+    }
 
-            // Líneas entre líneas de carga y sensores
-            foreach (var linea in lineasCarga)
+    /// <summary>
+    /// Toggle para Recalcular (Dirección por Carga) usando la nueva lógica:
+    /// - Si el modo ya está activo y no hay sensores nuevos, se desactiva.
+    /// - Si hay sensores nuevos, se actualiza la funcionalidad.
+    /// - Si no estaba activo, se activa.
+    /// 
+    /// Nota: Esta lógica es independiente y no afecta las banderas de SumaDeCargas o VectoresDesdeSensor.
+    /// </summary>
+    public void RecalcularLineasPunteadasToggle()
+    {
+        int currentCount = CountSensorsDetalle();
+        if (modoRecalcularActivo)
+        {
+            if (currentCount > lastSensorCountRecalcular)
             {
-                lineasPunteadas.CrearLineasPunteadas(linea.transform, sensor.transform);
+                lastSensorCountRecalcular = currentCount;
+                lineasPunteadas.EliminarTodasLasLineas();
+                foreach (var sensor in sensores)
+                {
+                    foreach (var carga in cargas)
+                    {
+                        lineasPunteadas.CrearLineasPunteadas(carga.transform, sensor.transform);
+                    }
+                    foreach (var linea in lineasCarga)
+                    {
+                        lineasPunteadas.CrearLineasPunteadas(linea.transform, sensor.transform);
+                    }
+                }
+            }
+            else
+            {
+                lineasPunteadas.EliminarTodasLasLineas();
+                modoRecalcularActivo = false;
+            }
+        }
+        else
+        {
+            modoRecalcularActivo = true;
+            lastSensorCountRecalcular = currentCount;
+            lineasPunteadas.EliminarTodasLasLineas();
+            foreach (var sensor in sensores)
+            {
+                foreach (var carga in cargas)
+                {
+                    lineasPunteadas.CrearLineasPunteadas(carga.transform, sensor.transform);
+                }
+                foreach (var linea in lineasCarga)
+                {
+                    lineasPunteadas.CrearLineasPunteadas(linea.transform, sensor.transform);
+                }
             }
         }
     }
 
+    /// <summary>
+    /// Toggle para SumaDeCargas con la lógica clásica:
+    /// - Si ya está activo y se presiona nuevamente, se elimina lo relacionado y se desactiva.
+    /// - Si no está activo, se activa (desactivando el otro modo si estuviera activo).
+    /// </summary>
     public void CrearSumaDeCargas()
     {
-        sumaDeCargas.sensores = sensores;
-
-        // Procesar cargas puntuales
-        foreach (var carga in cargas)
+        if (turnoSumaDeCargasActivo)
         {
-            sumaDeCargas.CrearOActualizarFlechaParaFuente(carga);
+            sumaDeCargas.EliminarTodasLasFlechas();
+            turnoSumaDeCargasActivo = false;
         }
-
-        // Procesar líneas de carga
-        foreach (var linea in lineasCarga)
+        else
         {
-            sumaDeCargas.CrearOActualizarFlechaParaFuente(linea);
+            if (turnoVectoresDesdeSensorActivo)
+            {
+                vectoresDesdeSensor.EliminarTodasLasFlechas();
+                turnoVectoresDesdeSensorActivo = false;
+            }
+            turnoSumaDeCargasActivo = true;
+            sumaDeCargas.sensores = sensores;
+            foreach (var carga in cargas)
+            {
+                sumaDeCargas.CrearOActualizarFlechaParaFuente(carga);
+            }
+            foreach (var linea in lineasCarga)
+            {
+                sumaDeCargas.CrearOActualizarFlechaParaFuente(linea);
+            }
+            turnoSumaDeCargasActivo = true;
+            sumaDeCargas.sensores = sensores;
+            sumaDeCargas.IniciarAnimacionSuma();
+        }
+    }
+
+    /// <summary>
+    /// Toggle para VectoresDesdeSensor con la lógica clásica:
+    /// - Si ya está activo y se presiona nuevamente, se elimina lo relacionado y se desactiva.
+    /// - Si no está activo, se activa (desactivando el otro modo si estuviera activo).
+    /// </summary>
+    public void CrearVectoresDesdeSensor()
+    {
+        if (turnoVectoresDesdeSensorActivo)
+        {
+            vectoresDesdeSensor.EliminarTodasLasFlechas();
+            turnoVectoresDesdeSensorActivo = false;
+        }
+        else
+        {
+            if (turnoSumaDeCargasActivo)
+            {
+                sumaDeCargas.EliminarTodasLasFlechas();
+                turnoSumaDeCargasActivo = false;
+            }
+            turnoVectoresDesdeSensorActivo = true;
+            vectoresDesdeSensor.sensores = sensores;
+            foreach (var carga in cargas)
+            {
+                vectoresDesdeSensor.CrearOActualizarFlechaParaFuente(carga);
+            }
+            foreach (var linea in lineasCarga)
+            {
+                vectoresDesdeSensor.CrearOActualizarFlechaParaFuente(linea);
+            }
         }
     }
 
     // Método para eliminar una carga
     public void EliminarCarga(GameObject carga)
     {
-        // Eliminar líneas asociadas
         lineasPunteadas.EliminarLineasDeCarga(carga.transform);
-
         cargas.Remove(carga);
-
-        // CAMBIA flechasPorCarga POR flechasPorFuente
-        if (sumaDeCargas.flechasPorFuente.TryGetValue(carga, out var flecha))
+        // Eliminamos todas las flechas asociadas a esta carga en SumaDeCargas (ahora usamos el diccionario anidado)
+        if (sumaDeCargas.flechasPorFuentePorSensor.ContainsKey(carga))
         {
-            Destroy(flecha);
-            sumaDeCargas.flechasPorFuente.Remove(carga);
+            var dict = sumaDeCargas.flechasPorFuentePorSensor[carga];
+            foreach (var flecha in dict.Values)
+            {
+                Destroy(flecha);
+            }
+            sumaDeCargas.flechasPorFuentePorSensor.Remove(carga);
         }
         Destroy(carga);
     }
@@ -258,12 +416,15 @@ public class CargaPuntualManager : MonoBehaviour
     {
         lineasCarga.Remove(linea);
         lineasPunteadas.EliminarLineasDeCarga(linea.transform);
-
-        // Añade esto para eliminar su flecha asociada
-        if (sumaDeCargas.flechasPorFuente.TryGetValue(linea, out var flecha))
+        // Eliminamos todas las flechas asociadas a esta línea en SumaDeCargas
+        if (sumaDeCargas.flechasPorFuentePorSensor.ContainsKey(linea))
         {
-            Destroy(flecha);
-            sumaDeCargas.flechasPorFuente.Remove(linea);
+            var dict = sumaDeCargas.flechasPorFuentePorSensor[linea];
+            foreach (var flecha in dict.Values)
+            {
+                Destroy(flecha);
+            }
+            sumaDeCargas.flechasPorFuentePorSensor.Remove(linea);
         }
         Destroy(linea);
     }

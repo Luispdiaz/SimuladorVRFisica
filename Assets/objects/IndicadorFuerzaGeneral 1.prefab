@@ -65,7 +65,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4c28d995d58e42f47b31c5d7e5c3a368, type: 2}
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -173,7 +173,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4c28d995d58e42f47b31c5d7e5c3a368, type: 2}
+  - {fileID: -6202392741857895490, guid: 089d1c82745c9cd4580018125215ce02, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -283,7 +283,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4c28d995d58e42f47b31c5d7e5c3a368, type: 2}
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -481,7 +481,7 @@ GameObject:
   - component: {fileID: -5995522370990213743}
   - component: {fileID: 1350816939557007268}
   m_Layer: 0
-  m_Name: IndicadorFuerzaGeneral
+  m_Name: IndicadorFuerzaGeneral 1
   m_TagString: Destructible
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -522,6 +522,7 @@ MonoBehaviour:
   cuerpo: {fileID: 2574456279987853086}
   punta: {fileID: 4699577954934133950}
   factorEscala: 0.1
+  colorIndicador: {r: 0.46868622, g: 0, b: 0.50216377, a: 1}
 --- !u!54 &1350816939557007268
 Rigidbody:
   m_ObjectHideFlags: 0

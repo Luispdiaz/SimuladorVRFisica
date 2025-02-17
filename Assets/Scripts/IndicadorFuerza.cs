@@ -10,9 +10,13 @@ public class IndicadorFuerza : MonoBehaviour
     public float factorEscala = 0.1f;
 
     // Estos valores representan la “configuración base” del indicador (longitud total = 0.11 + 0.09 = 0.20)
-    // Si en el prefab se configuraron otras distancias, puedes usarlas o modificarlas.
-    private float distanciaBaseCuerpo = 0.11f; // Distancia base entre la base y el cuerpo
+    private float distanciaBaseCuerpo = 0.11f;  // Distancia base entre la base y el cuerpo
     private float distanciaCuerpoPunta = 0.09f; // Distancia base entre el cuerpo y la punta
+
+    private void Start()
+    {
+        // (Se elimina la lógica de aplicación de color)
+    }
 
     /// <summary>
     /// Actualiza la dirección del indicador basado en la fuerza neta.
@@ -22,7 +26,6 @@ public class IndicadorFuerza : MonoBehaviour
     {
         if (fuerza.magnitude > 0.01f) // Asegurarse de que haya una fuerza significativa
         {
-            // Normalizar la dirección de la fuerza
             Vector3 direccionNormalizada = fuerza.normalized;
 
             // Orientar el objeto completo para que apunte en la dirección de la fuerza
@@ -35,37 +38,27 @@ public class IndicadorFuerza : MonoBehaviour
                 baseEsfera.position = transform.position;
             }
 
-            // Calcular la longitud deseada del indicador
-            // (esta longitud será proporcional a la magnitud de la fuerza)
+            // Calcular la longitud deseada (proporcional a la magnitud de la fuerza)
             float longitudDeseada = fuerza.magnitude * factorEscala;
 
-            // Rotar el indicador completo para alinearlo con la dirección de la fuerza
-            //Quaternion rotacionIndicador = Quaternion.LookRotation(direccionNormalizada, Vector3.up);
-            //transform.rotation = rotacionIndicador;
-
-            // Para escalar de forma similar a la flecha de la suma de cargas,
-            // usaremos el método de que el cuerpo (cilindro) se escala en Y
-            // de forma que su altura efectiva sea la mitad de la longitud total.
+            // Ajustar la escala y posición del cuerpo
             if (cuerpo != null)
             {
-                // Ajustar la escala del cuerpo
                 Vector3 nuevaEscala = cuerpo.localScale;
                 nuevaEscala.y = (longitudDeseada * 0.5f);
                 cuerpo.localScale = nuevaEscala;
 
-                // Reposicionar el cuerpo de forma que “comience” en la base.
-                // Suponiendo que el pivote está en el centro, se mueve hacia arriba la mitad de su altura.
+                // Reposicionar el cuerpo: se mueve hacia arriba la mitad de su altura
                 cuerpo.position = baseEsfera.position + (direccionNormalizada * nuevaEscala.y);
 
-                // Ajustar la rotación del cuerpo (corrigiendo la orientación, como en la flecha de cargas)
+                // Rotación del cuerpo
                 cuerpo.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
             }
 
-
-            // Posicionar la punta al final de la flecha
+            // Posicionar la punta al final
             if (punta != null)
             {
-                // La punta se coloca al final: desde la base se recorre toda la longitud
+                // Se coloca al final: longitudDeseada - 0.08f (ajusta según tu prefab)
                 punta.position = baseEsfera.position + (direccionNormalizada * (longitudDeseada - 0.08f));
                 punta.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
             }
@@ -84,21 +77,17 @@ public class IndicadorFuerza : MonoBehaviour
     {
         if (baseEsfera != null)
         {
-            // Colocar la base en la posición del objeto padre
             baseEsfera.position = transform.position;
         }
 
         if (cuerpo != null)
         {
-            // Usar las distancias base (sin escalado) para reposicionar el cuerpo
             cuerpo.position = transform.position + (transform.up * distanciaBaseCuerpo);
-            // Restaurar la rotación base (puedes ajustar si tu prefab requiere otra orientación)
             cuerpo.rotation = Quaternion.Euler(90, 0, 0);
         }
 
         if (punta != null)
         {
-            // Posicionar la punta en el extremo “original” del indicador
             punta.position = transform.position + (transform.up * (distanciaBaseCuerpo + distanciaCuerpoPunta));
             punta.rotation = Quaternion.Euler(90, 0, 0);
         }
