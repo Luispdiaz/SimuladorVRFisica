@@ -9329,6 +9329,8 @@ MonoBehaviour:
   miniSpherePrefab: {fileID: 2877251215816945538, guid: 43abdaae7fc194f4e8186551e8c5c54d, type: 3}
   lineaCargaPositivaPrefab: {fileID: 0}
   lineaCargaNegativaPrefab: {fileID: 0}
+  voltajeDeseado: 3
+  sliderVoltaje: {fileID: 0}
 --- !u!4 &877961603
 Transform:
   m_ObjectHideFlags: 0
@@ -15551,6 +15553,8 @@ MonoBehaviour:
   miniSpherePrefab: {fileID: 2877251215816945538, guid: 43abdaae7fc194f4e8186551e8c5c54d, type: 3}
   lineaCargaPositivaPrefab: {fileID: 0}
   lineaCargaNegativaPrefab: {fileID: 0}
+  voltajeDeseado: 3
+  sliderVoltaje: {fileID: 0}
 --- !u!4 &1456632852
 Transform:
   m_ObjectHideFlags: 0
@@ -23420,6 +23424,8 @@ MonoBehaviour:
   miniSpherePrefab: {fileID: 2877251215816945538, guid: 43abdaae7fc194f4e8186551e8c5c54d, type: 3}
   lineaCargaPositivaPrefab: {fileID: 9144462673293043558, guid: cf3bc5e1a1b23eb429e94daa8283c1e5, type: 3}
   lineaCargaNegativaPrefab: {fileID: 6250406608809342033, guid: afd492f4c45a0cc49a48643c2634f7d4, type: 3}
+  voltajeDeseado: 3
+  sliderVoltaje: {fileID: 0}
 --- !u!114 &2136638487
 MonoBehaviour:
   m_ObjectHideFlags: 0
