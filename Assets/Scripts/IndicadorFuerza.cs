@@ -1,21 +1,34 @@
 using UnityEngine;
+using TMPro;
 
 public class IndicadorFuerza : MonoBehaviour
 {
-    public Transform baseEsfera;  // Transform de la base
-    public Transform cuerpo;      // Transform del cuerpo (cilindro)
-    public Transform punta;       // Transform de la punta (pirámide)
+    public Transform baseEsfera;
+    public Transform cuerpo;
+    public Transform punta;
 
-    // Factor para ajustar la longitud del indicador según la magnitud de la fuerza
+    [Header("Parámetros de Fuerza")]
     public float factorEscala = 0.1f;
 
-    // Estos valores representan la “configuración base” del indicador (longitud total = 0.11 + 0.09 = 0.20)
-    private float distanciaBaseCuerpo = 0.11f;  // Distancia base entre la base y el cuerpo
-    private float distanciaCuerpoPunta = 0.09f; // Distancia base entre el cuerpo y la punta
+    // Distancias base (prefab)
+    private float distanciaBaseCuerpo = 0.11f;
+    private float distanciaCuerpoPunta = 0.09f;
+
+    private Vector3 ultimaPosicion;
+    private float umbralMovimiento = 0.001f;
+
+    [Header("Texto de Fuerza (Opcional)")]
+    [SerializeField] private TextMeshPro textoFuerza;
 
     private void Start()
     {
-        // (Se elimina la lógica de aplicación de color)
+        // Intentar obtener el TextMeshPro si no se asignó en el Inspector
+        if (textoFuerza == null)
+        {
+            textoFuerza = GetComponentInChildren<TextMeshPro>();
+        }
+        // NUEVO: Guardar la posición inicial
+        ultimaPosicion = transform.position;
     }
 
     /// <summary>
@@ -24,51 +37,67 @@ public class IndicadorFuerza : MonoBehaviour
     /// <param name="fuerza">Vector de fuerza que determina la dirección</param>
     public void ActualizarDireccion(Vector3 fuerza)
     {
-        if (fuerza.magnitude > 0.01f) // Asegurarse de que haya una fuerza significativa
-        {
-            Vector3 direccionNormalizada = fuerza.normalized;
+        float magnitudFuerza = fuerza.magnitude;
 
-            // Orientar el objeto completo para que apunte en la dirección de la fuerza
+        if (magnitudFuerza > 0.01f)
+        {
+            // Se considera que hay fuerza => habilitar cuerpo y punta
+            if (cuerpo != null) cuerpo.gameObject.SetActive(true);
+            if (punta != null) punta.gameObject.SetActive(true);
+
+            Vector3 direccionNormalizada = fuerza.normalized;
             Quaternion rotacionIndicador = Quaternion.LookRotation(direccionNormalizada, Vector3.up);
             transform.rotation = rotacionIndicador;
 
-            // Mantener la base fija en su posición
             if (baseEsfera != null)
             {
                 baseEsfera.position = transform.position;
             }
 
-            // Calcular la longitud deseada (proporcional a la magnitud de la fuerza)
-            float longitudDeseada = fuerza.magnitude * factorEscala;
+            float longitudDeseada = magnitudFuerza * factorEscala;
 
-            // Ajustar la escala y posición del cuerpo
             if (cuerpo != null)
             {
                 Vector3 nuevaEscala = cuerpo.localScale;
                 nuevaEscala.y = (longitudDeseada * 0.5f);
                 cuerpo.localScale = nuevaEscala;
-
-                // Reposicionar el cuerpo: se mueve hacia arriba la mitad de su altura
                 cuerpo.position = baseEsfera.position + (direccionNormalizada * nuevaEscala.y);
-
-                // Rotación del cuerpo
                 cuerpo.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
             }
 
-            // Posicionar la punta al final
             if (punta != null)
             {
-                // Se coloca al final: longitudDeseada - 0.08f (ajusta según tu prefab)
-                punta.position = baseEsfera.position + (direccionNormalizada * (longitudDeseada - 0.08f));
+                punta.position = baseEsfera.position +
+                                 (direccionNormalizada * (longitudDeseada - 0.08f));
                 punta.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
+            }
+
+            // Actualizar el texto de fuerza, si existe
+            if (textoFuerza != null)
+            {
+                textoFuerza.text = $"{magnitudFuerza:F2}";
             }
         }
         else
         {
-            // Si no hay fuerza significativa, mantener el indicador en su estado inicial
-            ResetIndicator();
+            // Si la fuerza es muy pequeña o no hay cargas => deshabilitar cuerpo y punta
+            if (cuerpo != null) cuerpo.gameObject.SetActive(false);
+            if (punta != null) punta.gameObject.SetActive(false);
+
+            // Opcional: puedes reposicionar la base en ResetIndicator(), o dejarlo
+            if (baseEsfera != null)
+            {
+                baseEsfera.position = transform.position;
+            }
+
+            // Texto en 0 o vacío
+            if (textoFuerza != null)
+            {
+                textoFuerza.text = "0.00";
+            }
         }
     }
+
 
     /// <summary>
     /// Restaura el estado inicial del indicador.
@@ -79,17 +108,44 @@ public class IndicadorFuerza : MonoBehaviour
         {
             baseEsfera.position = transform.position;
         }
-
         if (cuerpo != null)
         {
             cuerpo.position = transform.position + (transform.up * distanciaBaseCuerpo);
             cuerpo.rotation = Quaternion.Euler(90, 0, 0);
         }
-
         if (punta != null)
         {
-            punta.position = transform.position + (transform.up * (distanciaBaseCuerpo + distanciaCuerpoPunta));
+            punta.position = transform.position +
+                             (transform.up * (distanciaBaseCuerpo + distanciaCuerpoPunta));
             punta.rotation = Quaternion.Euler(90, 0, 0);
         }
+    }
+
+    private void LateUpdate()
+    {
+        // Mantener texto mirando a la cámara (ya existente)
+        if (textoFuerza != null && Camera.main != null)
+        {
+            textoFuerza.transform.rotation = Camera.main.transform.rotation;
+        }
+
+        // NUEVO: Detectar si el sensor se ha movido
+        float distancia = Vector3.Distance(transform.position, ultimaPosicion);
+
+        if (distancia > umbralMovimiento)
+        {
+            // Está en movimiento => desactivar cuerpo y punta
+            if (cuerpo != null) cuerpo.gameObject.SetActive(false);
+            if (punta != null) punta.gameObject.SetActive(false);
+        }
+        else
+        {
+            // Está estático => activar cuerpo y punta
+            if (cuerpo != null) cuerpo.gameObject.SetActive(true);
+            if (punta != null) punta.gameObject.SetActive(true);
+        }
+
+        // Actualizar la ultimaPosicion para el siguiente frame
+        ultimaPosicion = transform.position;
     }
 }

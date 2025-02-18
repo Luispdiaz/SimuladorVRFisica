@@ -34,6 +34,23 @@ public class CargaPuntualManager : MonoBehaviour
     private List<GameObject> cargas = new List<GameObject>();
     private List<GameObject> sensores = new List<GameObject>();
     private List<GameObject> esferasEquipotenciales = new List<GameObject>();
+    // Posición inicial de cada sensor detalle cuando activamos la Suma de Cargas
+    private Dictionary<GameObject, Vector3> posInicialSensoresDetalle = new Dictionary<GameObject, Vector3>();
+    private Color normalColorRecalcular;
+    private Color normalColorSuma;
+    private Color normalColorVectores;
+    private Color selectedColor; // #464689
+
+    // ============ NUEVAS variables para estado previo de banderas ============
+    private bool oldRecalcular = false;
+    private bool oldSuma = false;
+    private bool oldVectores = false;
+
+    // NUEVA variable para rastrear si antes teníamos sensor detalle
+    private bool oldHasSensorDetalle = false;
+
+    // Para almacenar la posición inicial de cada carga y línea cuando se activa SumaDeCargas
+    private Dictionary<GameObject, Vector3> posInicialCargasLineas = new Dictionary<GameObject, Vector3>();
 
 
     // Acceso a las listas (si lo necesitas en otros scripts)
@@ -84,6 +101,26 @@ public class CargaPuntualManager : MonoBehaviour
             sliderVoltaje.onValueChanged.AddListener(OnSliderVoltajeChanged);
             OnSliderVoltajeChanged(sliderVoltaje.value);
         }
+        // 1) Guardar color original de cada botón
+        normalColorRecalcular = recalcularButton.image.color;
+        normalColorSuma = sumaDeCargasButton.image.color;
+        normalColorVectores = vectoresDesdeSensorButton.image.color;
+
+        // 2) Convertir #464689 a un Color de Unity
+        ColorUtility.TryParseHtmlString("#464689", out selectedColor);
+
+        // 3) Inicializar old* con los valores actuales de las banderas
+        oldRecalcular = modoRecalcularActivo;
+        oldSuma = turnoSumaDeCargasActivo;
+        oldVectores = turnoVectoresDesdeSensorActivo;
+
+        // (Opcional) Llamar una vez para estado inicial
+        UpdateButtonsColor();
+
+        // NUEVO: Revisamos si hay sensor detalle al inicio
+        oldHasSensorDetalle = CountSensorsDetalle() > 0;
+        // Llamamos a UpdateButtonsInteractable() con el estado inicial
+        UpdateButtonsInteractable(oldHasSensorDetalle);
     }
 
     private void Update()
@@ -105,6 +142,114 @@ public class CargaPuntualManager : MonoBehaviour
         if (cargas.Count > 0 || lineasCarga.Count > 0)
         {
             ActualizarFlechas();
+        }
+        // NUEVO: Si Suma de Cargas está activo, revisamos si algún sensor detalle cambió su posición
+        if (turnoSumaDeCargasActivo)
+        {
+            bool algunSensorMovido = false;
+
+            // Recorremos las posiciones iniciales guardadas
+            foreach (var par in posInicialSensoresDetalle)
+            {
+                GameObject sensorDetalle = par.Key;
+                Vector3 posInicial = par.Value;
+
+                // Si el sensor ya no existe, lo ignoramos
+                if (sensorDetalle == null) continue;
+
+                // Comparamos su posición actual con la guardada
+                float dist = Vector3.Distance(sensorDetalle.transform.position, posInicial);
+                if (dist > 0.01f) // margen de tolerancia
+                {
+                    algunSensorMovido = true;
+                    break;
+                }
+            }
+
+            // Si detectamos que al menos un sensor se movió:
+            if (algunSensorMovido)
+            {
+                // Eliminamos flechas de SumaDeCargas
+                sumaDeCargas.EliminarTodasLasFlechas();
+                turnoSumaDeCargasActivo = false; // Desactivamos la bandera
+                Debug.Log("[Manager] Sensor detalle movido => Flechas de Suma de Cargas eliminadas");
+            }
+        }
+
+        // Actualizar flechas según el modo activo
+        if (cargas.Count > 0 || lineasCarga.Count > 0)
+        {
+            ActualizarFlechas();
+        }
+        // NUEVO: Detectar si las banderas han cambiado
+        if (modoRecalcularActivo != oldRecalcular ||
+            turnoSumaDeCargasActivo != oldSuma ||
+            turnoVectoresDesdeSensorActivo != oldVectores)
+        {
+            // Se detectó un cambio => actualizar colores
+            UpdateButtonsColor();
+
+            // Guardar el nuevo estado como "previo"
+            oldRecalcular = modoRecalcularActivo;
+            oldSuma = turnoSumaDeCargasActivo;
+            oldVectores = turnoVectoresDesdeSensorActivo;
+        }
+        // NUEVO: Cada frame, verificamos si ahora hay (o no) sensor detalle
+        bool hasSensorDetalle = (CountSensorsDetalle() > 0);
+
+        // Si cambió el estado respecto al frame anterior
+        if (hasSensorDetalle != oldHasSensorDetalle)
+        {
+            oldHasSensorDetalle = hasSensorDetalle;
+            UpdateButtonsInteractable(hasSensorDetalle);
+        }
+
+        // Solo si Suma de Cargas está activo
+        if (turnoSumaDeCargasActivo)
+        {
+            bool algunSensorMovido = false;
+            bool algunCargaLineaMovida = false;
+
+            // Revisa sensores detalle (ya existente)
+            foreach (var par in posInicialSensoresDetalle)
+            {
+                GameObject sensorDetalle = par.Key;
+                Vector3 posInicial = par.Value;
+                if (sensorDetalle == null) continue;
+
+                float dist = Vector3.Distance(sensorDetalle.transform.position, posInicial);
+                if (dist > 0.01f)
+                {
+                    algunSensorMovido = true;
+                    break;
+                }
+            }
+
+            // NUEVO: Revisa cargas y líneas
+            foreach (var par in posInicialCargasLineas)
+            {
+                GameObject obj = par.Key; // carga o línea
+                Vector3 posInicial = par.Value;
+                if (obj == null) continue;
+
+                float dist = Vector3.Distance(obj.transform.position, posInicial);
+                if (dist > 0.01f)
+                {
+                    algunCargaLineaMovida = true;
+                    break;
+                }
+            }
+
+            // Si algún sensor, carga o línea se movió, desactivamos SumaDeCargas
+            if (algunSensorMovido || algunCargaLineaMovida)
+            {
+                sumaDeCargas.EliminarTodasLasFlechas();
+                turnoSumaDeCargasActivo = false;
+                Debug.Log("[Manager] Se movió sensor/carga/línea => Flechas de Suma de Cargas eliminadas");
+
+                // (Opcional) Si usas un método para actualizar colores de botones:
+                // UpdateButtonsColor();
+            }
         }
     }
 
@@ -241,16 +386,19 @@ private float CalcularVoltaje(Vector3 posicion)
     return voltaje;
 }
 
-
-    private void ActualizarTextoFuerzaCarga(GameObject carga)
+    private void ActualizarTextoFuerzaCarga(GameObject cargaObj)
     {
-        var cargaScript = carga.GetComponent<Carga>();
-        var textComponent = carga.GetComponentInChildren<Text>();
-        if (cargaScript != null && textComponent != null)
+        var cargaScript = cargaObj.GetComponent<Carga>();
+        if (cargaScript == null) return;
+
+        var cargaTexto = cargaObj.GetComponentInChildren<CargaTexto>();
+        if (cargaTexto != null)
         {
-            textComponent.text = cargaScript.fuerza.ToString("F2");
+            // Pasamos la información de si es positiva o no, y la magnitud de la fuerza
+            cargaTexto.ActualizarTextoFuerza(cargaScript.esPositiva, cargaScript.fuerza);
         }
     }
+
 
     private void ActualizarFlechas()
     {
@@ -296,6 +444,17 @@ private float CalcularVoltaje(Vector3 posicion)
 
     private void CrearLineaCarga(GameObject prefab, bool esPositiva)
     {
+        // 1) Desactiva banderas
+        modoRecalcularActivo = false;
+        turnoSumaDeCargasActivo = false;
+        turnoVectoresDesdeSensorActivo = false;
+
+        // 2) Elimina visuales si estaban activos
+        sumaDeCargas.EliminarTodasLasFlechas();
+        vectoresDesdeSensor.EliminarTodasLasFlechas();
+        lineasPunteadas.EliminarTodasLasLineas();
+
+        // 3) Crear la nueva línea
         var nuevaLinea = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
         var script = nuevaLinea.AddComponent<LineaCarga>();
         script.esPositiva = esPositiva;
@@ -304,6 +463,20 @@ private float CalcularVoltaje(Vector3 posicion)
 
     private void CrearCarga(GameObject prefab, bool esPositiva)
     {
+        // 1) Desactiva banderas
+        modoRecalcularActivo = false;
+        turnoSumaDeCargasActivo = false;
+        turnoVectoresDesdeSensorActivo = false;
+
+        // 2) Elimina visuales si estaban activos
+        // - Flechas de Suma
+        sumaDeCargas.EliminarTodasLasFlechas();
+        // - Flechas de Vectores
+        vectoresDesdeSensor.EliminarTodasLasFlechas();
+        // - Líneas punteadas (si las usas con Recalcular)
+        lineasPunteadas.EliminarTodasLasLineas();
+
+        // 3) Crear la nueva carga
         var nuevaCarga = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
         var script = nuevaCarga.AddComponent<Carga>();
         script.esPositiva = esPositiva;
@@ -315,9 +488,17 @@ private float CalcularVoltaje(Vector3 posicion)
         Debug.Log($"Creando sensor con tag: {tagSensor}");
         var nuevoSensor = Instantiate(prefabSensor, spawnPoint.position, spawnPoint.rotation);
         nuevoSensor.tag = tagSensor;
-        var indicadorScript = nuevoSensor.AddComponent<IndicadorFuerza>();
-        // Se actualiza su fuerza de inmediato
+
+        // El script IndicadorFuerza ya está en el prefab, o lo agregas:
+        var indicadorScript = nuevoSensor.GetComponent<IndicadorFuerza>();
+        if (indicadorScript == null)
+        {
+            indicadorScript = nuevoSensor.AddComponent<IndicadorFuerza>();
+        }
+
+        // Llamamos a ActualizarSensorDeFuerza para darle su valor inicial
         ActualizarSensorDeFuerza(nuevoSensor);
+
         sensores.Add(nuevoSensor);
     }
 
@@ -388,10 +569,32 @@ private float CalcularVoltaje(Vector3 posicion)
             turnoSumaDeCargasActivo = true;
             sumaDeCargas.sensores = sensores;
 
+            // NUEVO: Limpiamos y guardamos la posición actual de cada sensor detalle
+            posInicialSensoresDetalle.Clear();
+            foreach (var sensor in sensores)
+            {
+                if (sensor.CompareTag("sensor detalle"))
+                {
+                    posInicialSensoresDetalle[sensor] = sensor.transform.position;
+                }
+            }
+
+            // NUEVO: Guardar posición inicial de cada carga y línea
+            posInicialCargasLineas.Clear();
+            foreach (var c in cargas)
+            {
+                posInicialCargasLineas[c] = c.transform.position;
+            }
+            foreach (var l in lineasCarga)
+            {
+                posInicialCargasLineas[l] = l.transform.position;
+            }
+
+            // Crear flechas de SumaDeCargas como siempre
             foreach (var c in cargas) sumaDeCargas.CrearOActualizarFlechaParaFuente(c);
             foreach (var l in lineasCarga) sumaDeCargas.CrearOActualizarFlechaParaFuente(l);
 
-            // Llamar a la animación (si tu SumaDeCargas la tiene)
+            // Iniciar la animación si existe
             sumaDeCargas.IniciarAnimacionSuma();
         }
     }
@@ -503,6 +706,35 @@ private float CalcularVoltaje(Vector3 posicion)
         }
 
         Debug.Log($"[Manager] Se crearon {esferasEquipotenciales.Count} puntos equipotenciales");
+    }
+
+    private void UpdateButtonsColor()
+    {
+        // Recalcular
+        if (modoRecalcularActivo)
+            recalcularButton.image.color = selectedColor;
+        else
+            recalcularButton.image.color = normalColorRecalcular;
+
+        // Suma de Cargas
+        if (turnoSumaDeCargasActivo)
+            sumaDeCargasButton.image.color = selectedColor;
+        else
+            sumaDeCargasButton.image.color = normalColorSuma;
+
+        // Vectores Desde Sensor
+        if (turnoVectoresDesdeSensorActivo)
+            vectoresDesdeSensorButton.image.color = selectedColor;
+        else
+            vectoresDesdeSensorButton.image.color = normalColorVectores;
+    }
+
+    // Método para habilitar/deshabilitar los tres botones (recalcular, suma, vectores)
+    private void UpdateButtonsInteractable(bool hasDetail)
+    {
+        recalcularButton.interactable = hasDetail;
+        sumaDeCargasButton.interactable = hasDetail;
+        vectoresDesdeSensorButton.interactable = hasDetail;
     }
 
 }
