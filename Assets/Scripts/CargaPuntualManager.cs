@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using TMPro;
 
 public class CargaPuntualManager : MonoBehaviour
 {
@@ -27,6 +28,9 @@ public class CargaPuntualManager : MonoBehaviour
     public GameObject lineaCargaPositivaPrefab;
     public GameObject lineaCargaNegativaPrefab;
 
+    public Slider sliderFuerza;
+    public float fuerzaDeseada = 1f;
+    public TextMeshProUGUI textoFuerza;
 
 
     // Listas internas
@@ -121,6 +125,12 @@ public class CargaPuntualManager : MonoBehaviour
         oldHasSensorDetalle = CountSensorsDetalle() > 0;
         // Llamamos a UpdateButtonsInteractable() con el estado inicial
         UpdateButtonsInteractable(oldHasSensorDetalle);
+
+        if (sliderFuerza != null)
+        {
+            sliderFuerza.onValueChanged.AddListener(OnSliderFuerzaChanged);
+            OnSliderFuerzaChanged(sliderFuerza.value);  // Inicializa el valor de la fuerza
+        }
     }
 
     private void Update()
@@ -136,6 +146,11 @@ public class CargaPuntualManager : MonoBehaviour
         foreach (var carga in cargas)
         {
             ActualizarTextoFuerzaCarga(carga);
+        }
+
+        foreach (var linea in lineasCarga)
+        {
+            ActualizarTextoFuerzaLinea(linea);
         }
 
         // Actualizar flechas según el modo activo
@@ -399,6 +414,19 @@ private float CalcularVoltaje(Vector3 posicion)
         }
     }
 
+    private void ActualizarTextoFuerzaLinea(GameObject lineaObj)
+    {
+        var lineaScript = lineaObj.GetComponent<LineaCarga>();
+        if (lineaScript == null) return;
+
+        var lineaTexto = lineaObj.GetComponentInChildren<LineaTexto>();
+        if (lineaTexto != null)
+        {
+            // Pasamos la densidad de carga de la línea
+            lineaTexto.ActualizarTextoLinea(lineaScript.densidadCarga, lineaScript.esPositiva);
+        }
+    }
+
 
     private void ActualizarFlechas()
     {
@@ -456,30 +484,34 @@ private float CalcularVoltaje(Vector3 posicion)
 
         // 3) Crear la nueva línea
         var nuevaLinea = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
-        var script = nuevaLinea.AddComponent<LineaCarga>();
+        var script = nuevaLinea.GetComponent<LineaCarga>();
         script.esPositiva = esPositiva;
+
+        // Asegúrate de que la densidad de carga se esté tomando del slider (fuerzaDeseada)
+        script.densidadCarga = fuerzaDeseada;  // Asignar el valor del slider a la densidad de carga de la línea
+
         lineasCarga.Add(nuevaLinea);
     }
 
+
     private void CrearCarga(GameObject prefab, bool esPositiva)
     {
-        // 1) Desactiva banderas
+        // Resetear las banderas
         modoRecalcularActivo = false;
         turnoSumaDeCargasActivo = false;
         turnoVectoresDesdeSensorActivo = false;
 
-        // 2) Elimina visuales si estaban activos
-        // - Flechas de Suma
+        // Limpiar los elementos visuales existentes
         sumaDeCargas.EliminarTodasLasFlechas();
-        // - Flechas de Vectores
         vectoresDesdeSensor.EliminarTodasLasFlechas();
-        // - Líneas punteadas (si las usas con Recalcular)
         lineasPunteadas.EliminarTodasLasLineas();
 
-        // 3) Crear la nueva carga
+        // Instanciar la nueva carga
         var nuevaCarga = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
-        var script = nuevaCarga.AddComponent<Carga>();
-        script.esPositiva = esPositiva;
+        var cargaScript = nuevaCarga.GetComponent<Carga>();
+        cargaScript.esPositiva = esPositiva;
+        cargaScript.fuerza = fuerzaDeseada;  // Asignar el valor de la fuerza desde el slider
+
         cargas.Add(nuevaCarga);
     }
 
@@ -708,6 +740,19 @@ private float CalcularVoltaje(Vector3 posicion)
         Debug.Log($"[Manager] Se crearon {esferasEquipotenciales.Count} puntos equipotenciales");
     }
 
+    private void OnSliderFuerzaChanged(float value)
+    {
+        fuerzaDeseada = value;  // Asigna el valor del slider a la variable fuerzaDeseada
+
+        // Actualiza el texto con el nuevo valor del slider
+        if (textoFuerza != null)
+        {
+            textoFuerza.text = $"Valor de carga: {fuerzaDeseada:F2}";  // Muestra el valor con dos decimales
+        }
+
+        Debug.Log($"[Manager] Nuevo valor de carga: {fuerzaDeseada}");
+    }
+
     private void UpdateButtonsColor()
     {
         // Recalcular
@@ -736,5 +781,7 @@ private float CalcularVoltaje(Vector3 posicion)
         sumaDeCargasButton.interactable = hasDetail;
         vectoresDesdeSensorButton.interactable = hasDetail;
     }
+
+    
 
 }
