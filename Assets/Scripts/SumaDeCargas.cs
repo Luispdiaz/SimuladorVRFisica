@@ -53,11 +53,26 @@ public class SumaDeCargas : MonoBehaviour
             {
                 if (flechasPorFuentePorSensor[fuente].TryGetValue(sensor, out GameObject flecha))
                 {
-                    flechasDelSensor.Add(flecha);
-                    FlechaData data = flecha.GetComponent<FlechaData>();
-                    float longitud = flecha.transform.Find("Cuerpo").localScale.y * 2;
-                    direcciones.Add(data.direccion.normalized); // Dirección normalizada
-                    longitudes.Add(longitud); // Longitud del vector
+                    // Verificar si la flecha y el componente FlechaData no son nulos antes de continuar
+                    if (flecha != null)
+                    {
+                        FlechaData data = flecha.GetComponent<FlechaData>();
+                        if (data != null)
+                        {
+                            flechasDelSensor.Add(flecha);
+                            float longitud = flecha.transform.Find("Cuerpo").localScale.y * 2;
+                            direcciones.Add(data.direccion.normalized); // Dirección normalizada
+                            longitudes.Add(longitud); // Longitud del vector
+                        }
+                        else
+                        {
+                            Debug.LogWarning("FlechaData es null en una de las flechas. Asegúrate de que todas las flechas tengan el componente FlechaData.");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Flecha es null. No se puede acceder a los datos de esta flecha.");
+                    }
                 }
             }
 
@@ -73,29 +88,35 @@ public class SumaDeCargas : MonoBehaviour
             // 3. Resetear todas las flechas al sensor
             foreach (var flecha in flechasDelSensor)
             {
-                flecha.transform.position = posicionSensor;
+                if (flecha != null)
+                {
+                    flecha.transform.position = posicionSensor;
+                }
             }
 
             // 4. Animar secuencialmente desde el sensor
             for (int i = 1; i < flechasDelSensor.Count; i++)
             {
                 GameObject flecha = flechasDelSensor[i];
-                Vector3 fin = posicionesFinales[i-1];
+                if (flecha != null)
+                {
+                    Vector3 fin = posicionesFinales[i - 1];
 
-                if (i == 0)
-                {
-                    // Primera flecha estática
-                    flecha.transform.position = fin;
-                }
-                else
-                {
-                    // Flechas posteriores: animar desde el sensor hasta la posición acumulada
-                    yield return StartCoroutine(AnimarFlecha(
-                        flecha.transform,
-                        posicionSensor, // Siempre inician en el sensor
-                        fin,
-                        flecha.transform.rotation
-                    ));
+                    if (i == 0)
+                    {
+                        // Primera flecha estática
+                        flecha.transform.position = fin;
+                    }
+                    else
+                    {
+                        // Flechas posteriores: animar desde el sensor hasta la posición acumulada
+                        yield return StartCoroutine(AnimarFlecha(
+                            flecha.transform,
+                            posicionSensor, // Siempre inician en el sensor
+                            fin,
+                            flecha.transform.rotation
+                        ));
+                    }
                 }
             }
         }
@@ -177,10 +198,20 @@ public class SumaDeCargas : MonoBehaviour
             direccionFuerza = CalcularFuerzaLinea(lineaScript, sensor.transform.position);
         }
 
+        // Si la fuerza es cero (el sensor está en la misma posición que la carga), no mostramos la flecha
+        if (direccionFuerza.magnitude <= 0.01f)
+        {
+            flecha.SetActive(false); // Desactivamos la flecha si la fuerza es cero
+            return;
+        }
+
+        // Si la fuerza no es cero, activamos la flecha
+        flecha.SetActive(true);
+
+        // Ajustar escala y posición de las partes de la flecha
         float magnitudFuerza = direccionFuerza.magnitude;
         float longitudFlecha = 0f;
 
-        // Ajustar escala y posición de las partes de la flecha
         Transform cuerpo = flecha.transform.Find("Cuerpo");
         Transform punta = flecha.transform.Find("Punta");
 
@@ -205,8 +236,8 @@ public class SumaDeCargas : MonoBehaviour
 
         // Utilizar una posición inicial para la flecha basada en el sensor
         Vector3 posicionInicial = posicionesFinalesPorSensor.ContainsKey(sensor)
-                                    ? posicionesFinalesPorSensor[sensor]
-                                    : sensor.transform.position;
+                                        ? posicionesFinalesPorSensor[sensor]
+                                        : sensor.transform.position;
         // Actualizar la posición final para este sensor
         posicionesFinalesPorSensor[sensor] = posicionInicial + (direccionFuerza.normalized * longitudFlecha);
 

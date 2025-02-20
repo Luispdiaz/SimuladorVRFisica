@@ -69,6 +69,17 @@ public class VectoresDesdeSensor : MonoBehaviour
             direccionFuerza = CalcularFuerzaLinea(lineaScript, sensor.transform.position);
         }
 
+        // Si la fuerza es cero, no mostramos la flecha
+        if (direccionFuerza.magnitude == 0f)
+        {
+            flecha.SetActive(false);  // Desactiva la flecha
+            return;
+        }
+        else
+        {
+            flecha.SetActive(true);  // Asegura que la flecha esté activa
+        }
+
         float magnitudFuerza = direccionFuerza.magnitude;
         float longitudFlecha = 0f;
 
@@ -94,16 +105,14 @@ public class VectoresDesdeSensor : MonoBehaviour
         flecha.transform.rotation = Quaternion.LookRotation(direccionFuerza) * Quaternion.Euler(90, 0, 0);
         // Se posiciona la flecha en la posición del sensor (manteniendo la lógica original)
         flecha.transform.position = sensor.transform.position;
-        // (Opcional) Si deseas mantener posiciones finales calculadas, podrías actualizar 'posicionesFinalesPorSensor' aquí
 
-        // Actualiza el color de la flecha según el tipo de fuente:
-        // - Carga: rojo si es positiva, azul si es negativa.
-        // - Línea: magenta si es positiva, cian si es negativa.
+        // Actualiza el color de la flecha según el tipo de fuente
         ActualizarColor(flecha,
             cargaScript != null
                 ? (cargaScript.esPositiva ? Color.red : Color.blue)
                 : (lineaScript.esPositiva ? Color.magenta : Color.cyan));
     }
+
 
     private Vector3 CalcularFuerzaCarga(Carga carga, Vector3 posicionSensor)
     {

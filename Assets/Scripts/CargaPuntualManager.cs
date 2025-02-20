@@ -17,6 +17,7 @@ public class CargaPuntualManager : MonoBehaviour
     public Button recalcularButton;
     public Button insertarLineaPositivaBtn;
     public Button insertarLineaNegativaBtn;
+    public Button leyCoulombBtn;
     public Button botonSensorVoltaje;       // Botón para crear sensor de voltaje
     public GameObject sensorVoltajePrefab;  // Prefab del sensor voltaje (con un texto en su interior)
     public Transform spawnPoint;            // Punto de aparición de las cargas e indicadores
@@ -93,6 +94,7 @@ public class CargaPuntualManager : MonoBehaviour
         insertarLineaPositivaBtn.onClick.AddListener(IngresarLineaPositiva);
         insertarLineaNegativaBtn.onClick.AddListener(IngresarLineaNegativa);
         botonSensorVoltaje.onClick.AddListener(CrearSensorVoltaje);
+        leyCoulombBtn.onClick.AddListener(ActivarSensorDetalleEnCargaCercana);
 
         lineasPunteadas = GetComponent<LineasPunteadas>() ?? gameObject.AddComponent<LineasPunteadas>();
         lineasPunteadas.miniSpherePrefab = miniSpherePrefab;
@@ -782,6 +784,75 @@ private float CalcularVoltaje(Vector3 posicion)
         vectoresDesdeSensorButton.interactable = hasDetail;
     }
 
-    
+    public void ActivarSensorDetalleEnCargaCercana()
+    {
+        // Verifica si ya existe al menos un sensor detalle en la escena
+        GameObject sensorDetalle = sensores.Find(sensor => sensor.CompareTag("sensor detalle"));
+
+        if (sensorDetalle == null) return;  // Si no existe un sensor detalle, termina la ejecución
+
+        // Encuentra la carga más cercana
+        GameObject cargaMasCercana = ObtenerCargaMasCercana(sensorDetalle.transform.position);
+
+        if (cargaMasCercana != null)
+        {
+            // Coloca el sensor en la carga más cercana
+            sensorDetalle.transform.position = cargaMasCercana.transform.position;
+
+            // Excluye la carga de la suma de cargas
+            ExcluirDeSumaDeCargas(cargaMasCercana);
+
+            // Calcula el campo eléctrico de las demás cargas multiplicado por el valor de la carga actual
+            CalcularCampoElectricoSobreCarga(sensorDetalle, cargaMasCercana);
+        }
+    }
+
+    private GameObject ObtenerCargaMasCercana(Vector3 posicionSensor)
+    {
+        GameObject cargaMasCercana = null;
+        float distanciaMinima = Mathf.Infinity;  // Inicializa con un valor alto
+
+        // Recorre todas las cargas para encontrar la más cercana
+        foreach (GameObject carga in cargas)
+        {
+            float distancia = Vector3.Distance(carga.transform.position, posicionSensor);
+            if (distancia < distanciaMinima)
+            {
+                cargaMasCercana = carga;
+                distanciaMinima = distancia;
+            }
+        }
+
+        return cargaMasCercana;
+    }
+
+    private void ExcluirDeSumaDeCargas(GameObject cargaExcluida)
+    {
+        sumaDeCargas.flechasPorFuentePorSensor.Remove(cargaExcluida);  // Elimina la carga de la suma
+    }
+
+    private void CalcularCampoElectricoSobreCarga(GameObject sensorDetalle, GameObject carga)
+    {
+        Vector3 posicionSensor = sensorDetalle.transform.position;
+        Vector3 direccion = carga.transform.position - posicionSensor;
+        float distancia = direccion.magnitude;
+
+        if (distancia > 0.01f) // Evitar división por cero o distancias muy pequeñas
+        {
+            float k = 9e9f;  // Constante de Coulomb (en N·m²/C²)
+            float cargaValor = carga.GetComponent<Carga>().fuerza;  // Obtener el valor de la carga
+            float campoElectrico = k * cargaValor / (distancia * distancia);
+
+            // El campo eléctrico generado por la carga sobre el sensor
+            Vector3 campo = campoElectrico * direccion.normalized;
+
+            // Mostrar el valor del campo eléctrico en el log (puedes actualizar UI si es necesario)
+            Debug.Log($"Campo eléctrico sobre la carga: {campo}");
+        }
+    }
+
+
+
+
 
 }
