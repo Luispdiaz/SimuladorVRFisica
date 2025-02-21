@@ -26,11 +26,11 @@ public class CargaTexto : MonoBehaviour
         // Si es negativa, anteponemos el signo - al valor.
         if (esPositiva)
         {
-            textoFuerza.text = $"{fuerza:F2} C";
+            textoFuerza.text = $"{fuerza:F2} µC";
         }
         else
         {
-            textoFuerza.text = $"-{fuerza:F2} C";
+            textoFuerza.text = $"-{fuerza:F2} µC";
         }
     }
 

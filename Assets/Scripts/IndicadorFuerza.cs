@@ -40,65 +40,80 @@ public class IndicadorFuerza : MonoBehaviour
     {
         float magnitudFuerza = fuerza.magnitude;
 
-        if (magnitudFuerza > 0.01f)
+        // Detectar si el objeto se está moviendo
+        if (Vector3.Distance(ultimaPosicion, transform.position) > umbralMovimiento)
         {
-            // Habilitar cuerpo y punta
-            if (cuerpo != null) cuerpo.gameObject.SetActive(true);
-            if (punta != null) punta.gameObject.SetActive(true);
-
-            Vector3 direccionNormalizada = fuerza.normalized;
-            Quaternion rotacionIndicador = Quaternion.LookRotation(direccionNormalizada, Vector3.up);
-            transform.rotation = rotacionIndicador;
-
-            if (baseEsfera != null)
-            {
-                baseEsfera.position = transform.position;
-            }
-
-            float longitudDeseada = magnitudFuerza * factorEscala;
-
-            if (cuerpo != null)
-            {
-                Vector3 nuevaEscala = cuerpo.localScale;
-                nuevaEscala.y = (longitudDeseada * 0.5f);
-                cuerpo.localScale = nuevaEscala;
-                cuerpo.position = baseEsfera.position + (direccionNormalizada * nuevaEscala.y);
-                cuerpo.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
-            }
-
-            if (punta != null)
-            {
-                punta.position = baseEsfera.position + (direccionNormalizada * (longitudDeseada - 0.08f));
-                punta.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
-            }
-
-            // Actualizar el texto de fuerza, si existe
-            if (textoFuerza != null)
-            {
-                // Dependiendo del tipo de magnitud, cambiar la unidad mostrada
-                if (tipoCampo == TipoMagnitud.LeyDeCoulomb)
-                {
-                    textoFuerza.text = $"{magnitudFuerza:F2} N·m²/C²"; // Ley de Coulomb
-                }
-                else if (tipoCampo == TipoMagnitud.CampoElectrico)
-                {
-                    textoFuerza.text = $"{magnitudFuerza:F2} N/C"; // Campo Eléctrico
-                }
-            }
+            // Si el objeto se mueve, desactivamos el cuerpo y la punta
+            if (cuerpo != null) cuerpo.gameObject.SetActive(false);
+            if (punta != null) punta.gameObject.SetActive(false);
         }
         else
         {
-            // Si la fuerza es muy pequeña o no hay cargas => deshabilitar cuerpo y punta
-            if (cuerpo != null) cuerpo.gameObject.SetActive(false);
-            if (punta != null) punta.gameObject.SetActive(false);
-
-            // Texto en 0 o vacío
-            if (textoFuerza != null)
+            // Si no está moviéndose, habilitar cuerpo y punta si hay una fuerza significativa
+            if (magnitudFuerza > 0.01f)
             {
-                textoFuerza.text = "0.00";
+                // Habilitar cuerpo y punta
+                if (cuerpo != null) cuerpo.gameObject.SetActive(true);
+                if (punta != null) punta.gameObject.SetActive(true);
+
+                Vector3 direccionNormalizada = fuerza.normalized;
+                Quaternion rotacionIndicador = Quaternion.LookRotation(direccionNormalizada, Vector3.up);
+                transform.rotation = rotacionIndicador;
+
+                if (baseEsfera != null)
+                {
+                    baseEsfera.position = transform.position;
+                }
+
+                float longitudDeseada = magnitudFuerza * factorEscala;
+
+                if (cuerpo != null)
+                {
+                    Vector3 nuevaEscala = cuerpo.localScale;
+                    nuevaEscala.y = (longitudDeseada * 0.5f);
+                    cuerpo.localScale = nuevaEscala;
+                    cuerpo.position = baseEsfera.position + (direccionNormalizada * nuevaEscala.y);
+                    cuerpo.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
+                }
+
+                if (punta != null)
+                {
+                    punta.position = baseEsfera.position + (direccionNormalizada * (longitudDeseada - 0.08f));
+                    punta.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
+                }
+
+                // Actualizar el texto de fuerza, si existe
+                if (textoFuerza != null)
+                {
+                    // Dependiendo del tipo de magnitud, cambiar la unidad mostrada
+                    if (tipoCampo == TipoMagnitud.LeyDeCoulomb)
+                    {
+                        textoFuerza.text = $"{magnitudFuerza:F2}"; // Ley de Coulomb
+                    }
+                    else if (tipoCampo == TipoMagnitud.CampoElectrico)
+                    {
+                        textoFuerza.text = $"{magnitudFuerza:F2}"; // Campo Eléctrico
+                    }
+                }
+            }
+            else
+            {
+                // Si la fuerza es muy pequeña o no hay cargas => deshabilitar cuerpo y punta
+                if (cuerpo != null) cuerpo.gameObject.SetActive(false);
+                if (punta != null) punta.gameObject.SetActive(false);
+
+                // Texto en 0 o vacío
+                if (textoFuerza != null)
+                {
+                    textoFuerza.text = "0.00";
+                }
             }
         }
+
+        // Guardar la posición actual para detectar movimiento en el próximo frame
+        ultimaPosicion = transform.position;
     }
+
 
     private void LateUpdate()
     {

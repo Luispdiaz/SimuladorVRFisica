@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class GeometriaPiramidal : MonoBehaviour
@@ -40,6 +42,7 @@ public class GeometriaPiramidal : MonoBehaviour
     public GameObject subMenuCarga;
     public GameObject tituloSubMenu;
     public Button closeButton;
+    private List<GameObject> sensores = new List<GameObject>();
 
     private void Start()
     {
@@ -65,6 +68,12 @@ public class GeometriaPiramidal : MonoBehaviour
         float angularStep = angularStepDegrees * Mathf.Deg2Rad;
         int latDivisions = Mathf.CeilToInt(Mathf.PI / angularStep);
 
+        // Crear un punto de referencia en el centro de la esfera (como una esfera pequeña)
+        GameObject puntoReferencia = GameObject.CreatePrimitive(PrimitiveType.Sphere);  // Crear una esfera
+        puntoReferencia.transform.position = sphereOrigin;  // Colocarlo en el centro
+        puntoReferencia.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);  // Hacerla más pequeña
+        puntoReferencia.GetComponent<Renderer>().material.color = new Color(0.5f, 1f, 0.5f);  // Verde claro (RGB)
+
         for (int i = 0; i < latDivisions; i++)
         {
             float lat1 = -Mathf.PI / 2 + i * angularStep;
@@ -86,7 +95,6 @@ public class GeometriaPiramidal : MonoBehaviour
                     Mathf.Cos(latCenter) * Mathf.Sin(lonCenter)
                 );
 
-                // Calculamos el centro del patch en la esfera y lo movemos 0.5 unidad hacia el centro
                 Vector3 centerPos = sphereOrigin + normal * radioEsfera;
                 centerPos -= normal * 0.5f; // Acercar 0.5 unidades hacia el centro
 
@@ -102,11 +110,33 @@ public class GeometriaPiramidal : MonoBehaviour
                 }
                 tangent.Normalize();
 
-                // Rotamos 45° extra sobre el eje Y para la esfera
                 Quaternion rot = Quaternion.LookRotation(tangent, inward) * Quaternion.Euler(0, 45, 0);
 
                 GameObject piramide = Instantiate(piramidePrefab, centerPos, rot);
                 piramide.transform.localScale = escala;
+
+                // Asegúrate de que los objetos creados no afecten la física
+                Rigidbody rb = piramide.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = true;  // Desactiva la física
+                }
+
+                Collider collider = piramide.GetComponent<Collider>();
+                if (collider != null)
+                {
+                    collider.enabled = false; // Desactiva el collider
+                }
+
+                // Ignorar la colisión entre el sensor y la esfera
+                foreach (var sensor in sensores)
+                {
+                    Collider sensorCollider = sensor.GetComponent<Collider>();
+                    if (sensorCollider != null)
+                    {
+                        Physics.IgnoreCollision(sensorCollider, collider);
+                    }
+                }
 
                 if (arrowPrefab != null)
                 {
@@ -119,6 +149,9 @@ public class GeometriaPiramidal : MonoBehaviour
         }
         Debug.Log("Esfera de pirámides creada.");
     }
+
+
+
 
     private void CrearCilindroDePiramides()
     {
@@ -159,6 +192,29 @@ public class GeometriaPiramidal : MonoBehaviour
                 GameObject piramide = Instantiate(piramidePrefab, centerPos, rot);
                 piramide.transform.localScale = escala;
 
+                // Asegúrate de que los objetos creados no afecten la física
+                Rigidbody rb = piramide.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = true;  // Desactiva la física
+                }
+
+                Collider collider = piramide.GetComponent<Collider>();
+                if (collider != null)
+                {
+                    collider.enabled = false; // Desactiva el collider
+                }
+
+                // Ignorar la colisión entre el sensor y la esfera
+                foreach (var sensor in sensores) // Aquí accedemos a la lista correctamente
+                {
+                    Collider sensorCollider = sensor.GetComponent<Collider>();
+                    if (sensorCollider != null)
+                    {
+                        Physics.IgnoreCollision(sensorCollider, collider);
+                    }
+                }
+
                 if (arrowPrefab != null)
                 {
                     Quaternion arrowRot = Quaternion.LookRotation(tangent, normal) * Quaternion.Euler(0, 45, 0);
@@ -170,6 +226,7 @@ public class GeometriaPiramidal : MonoBehaviour
         }
         Debug.Log("Cilindro de pirámides creado.");
     }
+
 
     /// <summary>
     /// Inserta un único plano orientado en los ejes X e Y (acostado), es decir, su superficie se extiende en X e Y.

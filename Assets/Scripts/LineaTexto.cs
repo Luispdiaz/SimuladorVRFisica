@@ -26,11 +26,11 @@ public class LineaTexto : MonoBehaviour
             // Si es negativa, anteponemos el signo "-" al valor
             if (!esPositiva)
             {
-                textoDensidadCarga.text = $"-{densidadCarga:F2}";
+                textoDensidadCarga.text = $"-{densidadCarga:F2} µC/m";
             }
             else
             {
-                textoDensidadCarga.text = $"{densidadCarga:F2}";
+                textoDensidadCarga.text = $"{densidadCarga:F2} µC/m";
             }
         }
     }
