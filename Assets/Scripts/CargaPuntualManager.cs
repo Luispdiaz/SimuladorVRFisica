@@ -79,6 +79,13 @@ public class CargaPuntualManager : MonoBehaviour
     public float voltajeDeseado = 3f; // Valor por defecto
     public Slider sliderVoltaje;      // Asignar en Inspector
 
+    // Agregar estas variables
+    public GameObject indicadorDireccionPrefab; // Asignar en Inspector el nuevo prefab
+    public float distanciaEntreSensores = 0.5f;
+    public int rango = 5; // Sensores desde -5 a +5 en cada eje
+    public Button lineasDeCampoBtn; // Asignar en Inspector
+    private bool lineasDeCampoActivas = false;
+
     private void Start()
     {
         subMenuCarga.SetActive(false);
@@ -95,6 +102,7 @@ public class CargaPuntualManager : MonoBehaviour
         insertarLineaNegativaBtn.onClick.AddListener(IngresarLineaNegativa);
         botonSensorVoltaje.onClick.AddListener(CrearSensorVoltaje);
         leyCoulombBtn.onClick.AddListener(ActivarSensorDetalleEnCargaCercana);
+        lineasDeCampoBtn.onClick.AddListener(ToggleLineasDeCampo);
 
         lineasPunteadas = GetComponent<LineasPunteadas>() ?? gameObject.AddComponent<LineasPunteadas>();
         lineasPunteadas.miniSpherePrefab = miniSpherePrefab;
@@ -268,6 +276,18 @@ public class CargaPuntualManager : MonoBehaviour
                 // UpdateButtonsColor();
             }
         }
+        foreach (var sensor in sensores)
+        {
+            if (sensor.CompareTag("sensor linea"))
+            {
+                // Calcular la fuerza total que actúa sobre el sensor
+                Vector3 fuerza = CalcularFuerzaTotal(sensor.transform.position);
+                var indicador = sensor.GetComponent<IndicadorDireccion>();
+
+                // Actualizar dirección y magnitud del indicador (flecha)
+                indicador.ActualizarDireccion(fuerza);
+            }
+        }
     }
 
     /// <summary> Crea un sensor de voltaje. </summary>
@@ -287,6 +307,24 @@ public class CargaPuntualManager : MonoBehaviour
         if (indicadorScript != null)
         {
             Vector3 fuerzaTotal = CalcularFuerzaTotal(sensor.transform.position);
+
+            // Verificar si el sensor está sobre la carga
+            GameObject cargaMasCercana = ObtenerCargaMasCercana(sensor.transform.position);
+
+            if (cargaMasCercana != null)
+            {
+                float distancia = Vector3.Distance(sensor.transform.position, cargaMasCercana.transform.position);
+
+                // Si está sobre la carga (distancia muy pequeña)
+                if (distancia < 0.1f)
+                {
+                    indicadorScript.tipoCampo = IndicadorFuerza.TipoMagnitud.LeyDeCoulomb;  // Ley de Coulomb cuando el sensor está sobre la carga
+                }
+                else
+                {
+                    indicadorScript.tipoCampo = IndicadorFuerza.TipoMagnitud.CampoElectrico;  // Campo eléctrico cuando el sensor no está sobre la carga
+                }
+            }
             indicadorScript.ActualizarDireccion(fuerzaTotal);
         }
     }
@@ -852,6 +890,61 @@ private float CalcularVoltaje(Vector3 posicion)
     }
 
 
+    // Método para generar la grilla de sensores
+    private void GenerarSensoresEnGrid()
+    {
+        // Eliminar sensores anteriores del tipo "línea"
+        foreach (var sensor in sensores.FindAll(s => s.CompareTag("sensor linea")))
+        {
+            Destroy(sensor);
+        }
+        sensores.RemoveAll(s => s.CompareTag("sensor linea"));
+
+        // Generar nuevos sensores
+        for (int x = -rango; x <= rango; x++)
+        {
+            for (int y = -rango; y <= rango; y++)
+            {
+                for (int z = -rango; z <= rango; z++)
+                {
+                    Vector3 pos = spawnPoint.position + new Vector3(
+                        x * distanciaEntreSensores,
+                        y * distanciaEntreSensores,
+                        z * distanciaEntreSensores
+                    );
+
+                    GameObject sensor = Instantiate(
+                        indicadorDireccionPrefab,
+                        pos,
+                        Quaternion.identity
+                    );
+                    sensor.tag = "sensor linea";
+                    sensores.Add(sensor);
+                }
+            }
+        }
+    }
+
+    private void ToggleLineasDeCampo()
+{
+    lineasDeCampoActivas = !lineasDeCampoActivas;
+
+    if (lineasDeCampoActivas)
+    {
+        GenerarSensoresEnGrid();
+        lineasDeCampoBtn.image.color = selectedColor;
+    }
+    else
+    {
+        // Eliminar solo los sensores de línea
+        foreach (var sensor in sensores.FindAll(s => s.CompareTag("sensor linea")))
+        {
+            Destroy(sensor);
+        }
+        sensores.RemoveAll(s => s.CompareTag("sensor linea"));
+        lineasDeCampoBtn.image.color = normalColorVectores; // O tu color normal
+    }
+}
 
 
 

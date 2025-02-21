@@ -364,7 +364,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0.33, y: 1.29}
-  m_SizeDelta: {x: 1.8, y: 0.5}
+  m_SizeDelta: {x: 2.8, y: 0.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &215389558152792472
 MeshRenderer:
@@ -700,6 +700,7 @@ MonoBehaviour:
   punta: {fileID: 4699577954934133950}
   factorEscala: 0.1
   textoFuerza: {fileID: 5776885604121641141}
+  tipoCampo: 0
 --- !u!54 &1350816939557007268
 Rigidbody:
   m_ObjectHideFlags: 0

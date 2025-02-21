@@ -1,41 +1,22 @@
 using TMPro;
 using UnityEngine;
+using static IndicadorFuerza;
 
-public class IndicadorFuerza : MonoBehaviour
+public class IndicadorDireccion : MonoBehaviour
 {
     public Transform baseEsfera;
     public Transform cuerpo;
     public Transform punta;
 
-    [Header("Parámetros de Fuerza")]
-    public float factorEscala = 0.1f;
-
-    // Distancias base (prefab)
-    private float distanciaBaseCuerpo = 0.11f;
-    private float distanciaCuerpoPunta = 0.09f;
-
-    private Vector3 ultimaPosicion;
-    private float umbralMovimiento = 0.001f;
-
-    [Header("Texto de Fuerza (Opcional)")]
+    [Header("Texto (Opcional)")]
     [SerializeField] private TextMeshPro textoFuerza;
-
-    // Enum para el tipo de magnitud
-    public enum TipoMagnitud { LeyDeCoulomb, CampoElectrico }
-    public TipoMagnitud tipoCampo;  // Cambié el nombre de "tipoMagnitud" a "tipoCampo" para coincidir con tu código
 
     private void Start()
     {
-        // Intentar obtener el TextMeshPro si no se asignó en el Inspector
         if (textoFuerza == null)
-        {
             textoFuerza = GetComponentInChildren<TextMeshPro>();
-        }
-        // Guardar la posición inicial
-        ultimaPosicion = transform.position;
     }
 
-    // Método para actualizar la dirección y la visualización de la fuerza
     public void ActualizarDireccion(Vector3 fuerza)
     {
         float magnitudFuerza = fuerza.magnitude;
@@ -55,12 +36,9 @@ public class IndicadorFuerza : MonoBehaviour
                 baseEsfera.position = transform.position;
             }
 
-            float longitudDeseada = magnitudFuerza * factorEscala;
-
             if (cuerpo != null)
             {
                 Vector3 nuevaEscala = cuerpo.localScale;
-                nuevaEscala.y = (longitudDeseada * 0.5f);
                 cuerpo.localScale = nuevaEscala;
                 cuerpo.position = baseEsfera.position + (direccionNormalizada * nuevaEscala.y);
                 cuerpo.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
@@ -68,23 +46,13 @@ public class IndicadorFuerza : MonoBehaviour
 
             if (punta != null)
             {
-                punta.position = baseEsfera.position + (direccionNormalizada * (longitudDeseada - 0.08f));
+
+                punta.position = cuerpo.position + (direccionNormalizada * 0.13f);
                 punta.rotation = rotacionIndicador * Quaternion.Euler(90, 0, 0);
             }
 
             // Actualizar el texto de fuerza, si existe
-            if (textoFuerza != null)
-            {
-                // Dependiendo del tipo de magnitud, cambiar la unidad mostrada
-                if (tipoCampo == TipoMagnitud.LeyDeCoulomb)
-                {
-                    textoFuerza.text = $"{magnitudFuerza:F2} N·m²/C²"; // Ley de Coulomb
-                }
-                else if (tipoCampo == TipoMagnitud.CampoElectrico)
-                {
-                    textoFuerza.text = $"{magnitudFuerza:F2} N/C"; // Campo Eléctrico
-                }
-            }
+
         }
         else
         {
@@ -99,13 +67,9 @@ public class IndicadorFuerza : MonoBehaviour
             }
         }
     }
-
     private void LateUpdate()
     {
-        // Asegurarse de que el texto siempre apunte hacia la cámara
         if (textoFuerza != null && Camera.main != null)
-        {
             textoFuerza.transform.rotation = Camera.main.transform.rotation;
-        }
     }
 }
