@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using TMPro; // O "using UnityEngine.UI;" si usas Text de UI en lugar de TextMeshPro
 
 public class SensorVoltaje : MonoBehaviour
@@ -9,7 +9,7 @@ public class SensorVoltaje : MonoBehaviour
 
     private void Start()
     {
-        // Intentar obtener el texto si no se asignó en el Inspector
+        // Intentar obtener el texto si no se asignï¿½ en el Inspector
         if (textoVoltaje == null)
         {
             textoVoltaje = GetComponentInChildren<TextMeshPro>();
@@ -17,7 +17,7 @@ public class SensorVoltaje : MonoBehaviour
     }
 
     /// <summary>
-    /// Método para que el manager actualice el texto con el voltaje calculado.
+    /// Mï¿½todo para que el manager actualice el texto con el voltaje calculado.
     /// </summary>
     public void ActualizarTextoVoltaje(float voltaje)
     {
@@ -29,7 +29,7 @@ public class SensorVoltaje : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Orientar el texto hacia la cámara principal (si existe)
+        // Orientar el texto hacia la cï¿½mara principal (si existe)
         if (Camera.main != null && textoVoltaje != null)
         {
             textoVoltaje.transform.rotation = Camera.main.transform.rotation;

@@ -79,6 +79,7 @@ public class LineasPunteadas : MonoBehaviour
             }
             else
             {
+                // Se asume que si no es carga, es un objeto con collider, se usa ClosestPoint
                 Collider col = linea.start.GetComponent<Collider>();
                 if (col != null)
                     startPoint = col.ClosestPoint(linea.end.position);

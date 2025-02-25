@@ -1,4 +1,4 @@
-using TMPro;
+ï»¿using TMPro;
 using UnityEngine;
 
 public class IndicadorFuerza : MonoBehaviour
@@ -7,7 +7,7 @@ public class IndicadorFuerza : MonoBehaviour
     public Transform cuerpo;
     public Transform punta;
 
-    [Header("Parámetros de Fuerza")]
+    [Header("Parï¿½metros de Fuerza")]
     public float factorEscala = 0.1f;
 
     // Distancias base (prefab)
@@ -22,25 +22,25 @@ public class IndicadorFuerza : MonoBehaviour
 
     // Enum para el tipo de magnitud
     public enum TipoMagnitud { LeyDeCoulomb, CampoElectrico }
-    public TipoMagnitud tipoCampo;  // Cambié el nombre de "tipoMagnitud" a "tipoCampo" para coincidir con tu código
+    public TipoMagnitud tipoCampo;  // Cambiï¿½ el nombre de "tipoMagnitud" a "tipoCampo" para coincidir con tu cï¿½digo
 
     private void Start()
     {
-        // Intentar obtener el TextMeshPro si no se asignó en el Inspector
+        // Intentar obtener el TextMeshPro si no se asignï¿½ en el Inspector
         if (textoFuerza == null)
         {
             textoFuerza = GetComponentInChildren<TextMeshPro>();
         }
-        // Guardar la posición inicial
+        // Guardar la posiciï¿½n inicial
         ultimaPosicion = transform.position;
     }
 
-    // Método para actualizar la dirección y la visualización de la fuerza
+    // Mï¿½todo para actualizar la direcciï¿½n y la visualizaciï¿½n de la fuerza
     public void ActualizarDireccion(Vector3 fuerza)
     {
         float magnitudFuerza = fuerza.magnitude;
 
-        // Detectar si el objeto se está moviendo
+        // Detectar si el objeto se estï¿½ moviendo
         if (Vector3.Distance(ultimaPosicion, transform.position) > umbralMovimiento)
         {
             // Si el objeto se mueve, desactivamos el cuerpo y la punta
@@ -49,7 +49,7 @@ public class IndicadorFuerza : MonoBehaviour
         }
         else
         {
-            // Si no está moviéndose, habilitar cuerpo y punta si hay una fuerza significativa
+            // Si no estï¿½ moviï¿½ndose, habilitar cuerpo y punta si hay una fuerza significativa
             if (magnitudFuerza > 0.01f)
             {
                 // Habilitar cuerpo y punta
@@ -92,17 +92,17 @@ public class IndicadorFuerza : MonoBehaviour
                     }
                     else if (tipoCampo == TipoMagnitud.CampoElectrico)
                     {
-                        textoFuerza.text = $"{magnitudFuerza:F2}"; // Campo Eléctrico
+                        textoFuerza.text = $"{magnitudFuerza:F2}"; // Campo Elï¿½ctrico
                     }
                 }
             }
             else
             {
-                // Si la fuerza es muy pequeña o no hay cargas => deshabilitar cuerpo y punta
+                // Si la fuerza es muy pequeï¿½a o no hay cargas => deshabilitar cuerpo y punta
                 if (cuerpo != null) cuerpo.gameObject.SetActive(false);
                 if (punta != null) punta.gameObject.SetActive(false);
 
-                // Texto en 0 o vacío
+                // Texto en 0 o vacï¿½o
                 if (textoFuerza != null)
                 {
                     textoFuerza.text = "0.00";
@@ -110,14 +110,14 @@ public class IndicadorFuerza : MonoBehaviour
             }
         }
 
-        // Guardar la posición actual para detectar movimiento en el próximo frame
+        // Guardar la posiciï¿½n actual para detectar movimiento en el prï¿½ximo frame
         ultimaPosicion = transform.position;
     }
 
 
     private void LateUpdate()
     {
-        // Asegurarse de que el texto siempre apunte hacia la cámara
+        // Asegurarse de que el texto siempre apunte hacia la cï¿½mara
         if (textoFuerza != null && Camera.main != null)
         {
             textoFuerza.transform.rotation = Camera.main.transform.rotation;

@@ -2,11 +2,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using System;
 
 public class CargaPuntualManager : MonoBehaviour
 {
     // Referencias a UI y objetos
     public GameObject subMenuCarga;
+    public GameObject subMenuCarga1;
     public Button insertarCargaPositivaBtn;
     public Button insertarCargaNegativaBtn;
     public Button botonSensorDetalle;
@@ -14,6 +16,7 @@ public class CargaPuntualManager : MonoBehaviour
     public Button sumaDeCargasButton;
     public Button vectoresDesdeSensorButton;
     public Button closeButton;
+    public Button closeButton1;
     public Button recalcularButton;
     public Button insertarLineaPositivaBtn;
     public Button insertarLineaNegativaBtn;
@@ -29,16 +32,25 @@ public class CargaPuntualManager : MonoBehaviour
     public GameObject lineaCargaPositivaPrefab;
     public GameObject lineaCargaNegativaPrefab;
 
+    [Header("Planos Configuration")]
+    public GameObject planoPositivoPrefab;
+    public GameObject planoNegativoPrefab;
+    public float offsetPlano = 5f; // Distancia desde el spawnPoint
+
+    [Header("Botones Planos")]
+    public Button insertarPlanoPositivoBtn;
+    public Button insertarPlanoNegativoBtn;
+
     public Slider sliderFuerza;
     public float fuerzaDeseada = 1f;
     public TextMeshProUGUI textoFuerza;
 
 
     // Listas internas
-    private List<GameObject> lineasCarga = new List<GameObject>();
+    public List<GameObject> lineasCarga = new List<GameObject>();
+    private List<GameObject> planos = new List<GameObject>();
     private List<GameObject> cargas = new List<GameObject>();
-    private List<GameObject> sensores = new List<GameObject>();
-    private List<GameObject> esferasEquipotenciales = new List<GameObject>();
+    public List<GameObject> sensores = new List<GameObject>();
     // Posición inicial de cada sensor detalle cuando activamos la Suma de Cargas
     private Dictionary<GameObject, Vector3> posInicialSensoresDetalle = new Dictionary<GameObject, Vector3>();
     private Color normalColorRecalcular;
@@ -86,6 +98,8 @@ public class CargaPuntualManager : MonoBehaviour
     public Button lineasDeCampoBtn; // Asignar en Inspector
     private bool lineasDeCampoActivas = false;
 
+
+
     private void Start()
     {
         subMenuCarga.SetActive(false);
@@ -97,12 +111,16 @@ public class CargaPuntualManager : MonoBehaviour
         sumaDeCargasButton.onClick.AddListener(CrearSumaDeCargas);
         vectoresDesdeSensorButton.onClick.AddListener(CrearVectoresDesdeSensor);
         closeButton.onClick.AddListener(CerrarSubMenu);
+        closeButton1.onClick.AddListener(CerrarSubMenu1);
         recalcularButton.onClick.AddListener(RecalcularLineasPunteadasToggle);
         insertarLineaPositivaBtn.onClick.AddListener(IngresarLineaPositiva);
         insertarLineaNegativaBtn.onClick.AddListener(IngresarLineaNegativa);
         botonSensorVoltaje.onClick.AddListener(CrearSensorVoltaje);
         leyCoulombBtn.onClick.AddListener(ActivarSensorDetalleEnCargaCercana);
         lineasDeCampoBtn.onClick.AddListener(ToggleLineasDeCampo);
+        insertarPlanoPositivoBtn.onClick.AddListener(IngresarPlanoPositivo);
+        insertarPlanoNegativoBtn.onClick.AddListener(IngresarPlanoNegativo);
+
 
         lineasPunteadas = GetComponent<LineasPunteadas>() ?? gameObject.AddComponent<LineasPunteadas>();
         lineasPunteadas.miniSpherePrefab = miniSpherePrefab;
@@ -141,6 +159,7 @@ public class CargaPuntualManager : MonoBehaviour
             sliderFuerza.onValueChanged.AddListener(OnSliderFuerzaChanged);
             OnSliderFuerzaChanged(sliderFuerza.value);  // Inicializa el valor de la fuerza
         }
+
     }
 
     private void Update()
@@ -148,6 +167,12 @@ public class CargaPuntualManager : MonoBehaviour
         // Actualizar fuerza (IndicadorFuerza) en cada sensor
         foreach (var sensor in sensores)
         {
+            GameObject cargaAsociada = ObtenerCargaMasCercana(sensor.transform.position);
+            if (cargaAsociada != null &&
+                Vector3.Distance(sensor.transform.position, cargaAsociada.transform.position) < 0.1f)
+            {
+                ActualizarSensorDeFuerza(sensor); // Forzar actualización constante
+            }
             ActualizarSensorDeFuerza(sensor);
             ActualizarVoltajeSensor(sensor);
         }
@@ -306,26 +331,31 @@ public class CargaPuntualManager : MonoBehaviour
         var indicadorScript = sensor.GetComponent<IndicadorFuerza>();
         if (indicadorScript != null)
         {
-            Vector3 fuerzaTotal = CalcularFuerzaTotal(sensor.transform.position);
+            GameObject cargaAsociada = ObtenerCargaMasCercana(sensor.transform.position);
+            bool sobreCarga = false;
 
-            // Verificar si el sensor está sobre la carga
-            GameObject cargaMasCercana = ObtenerCargaMasCercana(sensor.transform.position);
-
-            if (cargaMasCercana != null)
+            if (cargaAsociada != null)
             {
-                float distancia = Vector3.Distance(sensor.transform.position, cargaMasCercana.transform.position);
+                float distancia = Vector3.Distance(sensor.transform.position, cargaAsociada.transform.position);
+                sobreCarga = distancia < 0.1f;
 
-                // Si está sobre la carga (distancia muy pequeña)
-                if (distancia < 0.1f)
+                if (sobreCarga)
                 {
-                    indicadorScript.tipoCampo = IndicadorFuerza.TipoMagnitud.LeyDeCoulomb;  // Ley de Coulomb cuando el sensor está sobre la carga
-                }
-                else
-                {
-                    indicadorScript.tipoCampo = IndicadorFuerza.TipoMagnitud.CampoElectrico;  // Campo eléctrico cuando el sensor no está sobre la carga
+                    // Calcular fuerza específica para carga asociada
+                    Vector3 campoTotal = CalcularFuerzaTotal(sensor.transform.position, cargaAsociada);
+                    Carga cargaScript = cargaAsociada.GetComponent<Carga>();
+                    Vector3 fuerzaFinal = campoTotal * cargaScript.fuerza * (cargaScript.esPositiva ? 1 : -1);
+
+                    indicadorScript.tipoCampo = IndicadorFuerza.TipoMagnitud.LeyDeCoulomb;
+                    indicadorScript.ActualizarDireccion(fuerzaFinal);
+                    return; // Salir después de aplicar cálculo especializado
                 }
             }
-            indicadorScript.ActualizarDireccion(fuerzaTotal);
+
+            // Cálculo normal si no está sobre carga
+            indicadorScript.tipoCampo = IndicadorFuerza.TipoMagnitud.CampoElectrico;
+            Vector3 fuerzaNormal = CalcularFuerzaTotal(sensor.transform.position);
+            indicadorScript.ActualizarDireccion(fuerzaNormal);
         }
     }
 
@@ -337,13 +367,6 @@ public class CargaPuntualManager : MonoBehaviour
         {
             float voltaje = CalcularVoltaje(sensor.transform.position);
             sensorVoltaje.ActualizarTextoVoltaje(voltaje);
-
-            // Comprobamos si estamos cerca del voltajeDeseado
-            if (Mathf.Abs(voltaje - voltajeDeseado) < 0.1f) // margen de tolerancia
-            {
-                // Llamar a método para pintar la superficie
-                PintarSuperficieEquipotencial(voltajeDeseado);
-            }
         }
     }
 
@@ -352,13 +375,15 @@ public class CargaPuntualManager : MonoBehaviour
     /// Calcula la fuerza total que actúa en un punto, sumando cargas y líneas.
     /// (Usado por IndicadorFuerza).
     /// </summary>
-    private Vector3 CalcularFuerzaTotal(Vector3 posicionSensor)
+    private Vector3 CalcularFuerzaTotal(Vector3 posicionSensor, GameObject cargaExcluida = null)
     {
         Vector3 fuerzaTotal = Vector3.zero;
 
         // Cargas puntuales
         foreach (var cargaObj in cargas)
         {
+            if (cargaObj == cargaExcluida) continue; // Excluir carga asociada
+
             var cargaScript = cargaObj.GetComponent<Carga>();
             if (cargaScript == null) continue;
 
@@ -381,6 +406,18 @@ public class CargaPuntualManager : MonoBehaviour
             Vector3 fuerzaLinea = CalcularFuerzaLinea(lineaObj, posicionSensor, scriptLinea);
             fuerzaTotal += fuerzaLinea;
         }
+
+        // Añadir contribución de planos
+        // Suponiendo que en CalcularFuerzaTotal ya recorres la lista `planos`
+        foreach (var planoObj in planos)
+        {
+            var scriptPlano = planoObj.GetComponent<PlanoFisico1>();
+            if (scriptPlano == null) continue;
+
+            Vector3 fuerzaPlano = scriptPlano.CalcularFuerzaPlano(posicionSensor);
+            fuerzaTotal += fuerzaPlano;
+        }
+
 
         return fuerzaTotal;
     }
@@ -406,40 +443,40 @@ public class CargaPuntualManager : MonoBehaviour
     /// <summary>
     /// Calcula el voltaje en un punto, sumando la contribución de todas las cargas y líneas.
     /// </summary>
-private float CalcularVoltaje(Vector3 posicion)
-{
-    float k = 1f;
-    float voltaje = 0f;
-
-    // Cargas puntuales
-    foreach (var cargaObj in cargas)
+    private float CalcularVoltaje(Vector3 posicion)
     {
-        var scriptCarga = cargaObj.GetComponent<Carga>();
-        if (scriptCarga == null) continue;
+        float k = 1f;
+        float voltaje = 0f;
 
-        float distancia = Vector3.Distance(posicion, cargaObj.transform.position);
-        if (distancia < 0.01f) continue;
+        // Cargas puntuales
+        foreach (var cargaObj in cargas)
+        {
+            var scriptCarga = cargaObj.GetComponent<Carga>();
+            if (scriptCarga == null) continue;
 
-        float cargaElectrica = scriptCarga.esPositiva ? scriptCarga.fuerza : -scriptCarga.fuerza;
-        float contrib = k * cargaElectrica / distancia;
-        voltaje += contrib;
+            float distancia = Vector3.Distance(posicion, cargaObj.transform.position);
+            if (distancia < 0.01f) continue;
+
+            float cargaElectrica = scriptCarga.esPositiva ? scriptCarga.fuerza : -scriptCarga.fuerza;
+            float contrib = k * cargaElectrica / distancia;
+            voltaje += contrib;
+        }
+
+        // Líneas de carga
+        foreach (var lineaObj in lineasCarga)
+        {
+            var scriptLinea = lineaObj.GetComponent<LineaCarga>();
+            if (scriptLinea == null) continue;
+
+            float distancia = Vector3.Distance(posicion, lineaObj.transform.position);
+            if (distancia < 0.01f) continue;
+
+            float contrib = scriptLinea.densidadCarga * Mathf.Log(distancia);
+            voltaje += contrib;
+        }
+
+        return voltaje;
     }
-
-    // Líneas de carga
-    foreach (var lineaObj in lineasCarga)
-    {
-        var scriptLinea = lineaObj.GetComponent<LineaCarga>();
-        if (scriptLinea == null) continue;
-
-        float distancia = Vector3.Distance(posicion, lineaObj.transform.position);
-        if (distancia < 0.01f) continue;
-
-        float contrib = scriptLinea.densidadCarga * Mathf.Log(distancia); 
-        voltaje += contrib;
-    }
-
-    return voltaje;
-}
 
     private void ActualizarTextoFuerzaCarga(GameObject cargaObj)
     {
@@ -494,15 +531,25 @@ private float CalcularVoltaje(Vector3 posicion)
                 vectoresDesdeSensor.CrearOActualizarFlechaParaFuente(l);
             }
         }
+        foreach (var p in planos)
+        {
+            if (turnoSumaDeCargasActivo) sumaDeCargas.CrearOActualizarFlechaParaFuente(p);
+            if (turnoVectoresDesdeSensorActivo) vectoresDesdeSensor.CrearOActualizarFlechaParaFuente(p);
+        }
     }
 
     public void MostrarSubMenuCargas() => subMenuCarga.SetActive(true);
     public void CerrarSubMenu() => subMenuCarga.SetActive(false);
+    public void CerrarSubMenu1() => subMenuCarga1.SetActive(false);
 
     public void IngresarCargaPositiva() => CrearCarga(cargaPositivaPrefab, true);
     public void IngresarCargaNegativa() => CrearCarga(cargaNegativaPrefab, false);
     public void IngresarLineaPositiva() => CrearLineaCarga(lineaCargaPositivaPrefab, true);
     public void IngresarLineaNegativa() => CrearLineaCarga(lineaCargaNegativaPrefab, false);
+
+    public void IngresarPlanoPositivo() => CrearPlano(true);
+    public void IngresarPlanoNegativo() => CrearPlano(false);
+
 
     private void OnSliderVoltajeChanged(float value)
     {
@@ -593,6 +640,11 @@ private float CalcularVoltaje(Vector3 posicion)
                     foreach (var l in lineasCarga)
                     {
                         lineasPunteadas.CrearLineasPunteadas(l.transform, sensor.transform);
+                    }
+                    foreach (var plano in planos)
+                    {
+                        // Suponiendo que 'sensor' sea el sensor detalle
+                        lineasPunteadas.CrearLineasPunteadas(plano.transform, sensor.transform);
                     }
                 }
             }
@@ -735,51 +787,6 @@ private float CalcularVoltaje(Vector3 posicion)
         return count;
     }
 
-    public void PintarSuperficieEquipotencial(float voltajeObjetivo)
-    {
-        Debug.Log($"[Manager] Pintando equipotencial para V = {voltajeObjetivo}");
-
-        // 1) Limpiar esferas previas (opcional)
-        foreach (var go in esferasEquipotenciales) Destroy(go);
-        esferasEquipotenciales.Clear();
-
-        // 2) Definir límites de muestreo
-        Vector3 center = Vector3.zero; // Podrías calcular un bounding box de tus cargas
-        float size = 10f;              // radio de muestreo
-
-        int resolution = 50; // Cuantos puntos por eje (20^3 = 8000 muestras)
-        float step = (size * 2) / resolution;
-
-        for (int ix = 0; ix < resolution; ix++)
-        {
-            for (int iy = 0; iy < resolution; iy++)
-            {
-                for (int iz = 0; iz < resolution; iz++)
-                {
-                    Vector3 samplePos = center + new Vector3(
-                        -size + ix * step,
-                        -size + iy * step,
-                        -size + iz * step
-                    );
-
-                    float v = CalcularVoltaje(samplePos);
-                    if (Mathf.Abs(v - voltajeObjetivo) < 0.2f) // tolerancia
-                    {
-                        // Instanciar pequeña esfera
-                        GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                        sphere.transform.position = samplePos;
-                        sphere.transform.localScale = Vector3.one * (step * 0.5f);
-                        sphere.GetComponent<Renderer>().material.color = Color.yellow;
-
-                        esferasEquipotenciales.Add(sphere);
-                    }
-                }
-            }
-        }
-
-        Debug.Log($"[Manager] Se crearon {esferasEquipotenciales.Count} puntos equipotenciales");
-    }
-
     private void OnSliderFuerzaChanged(float value)
     {
         fuerzaDeseada = value;  // Asigna el valor del slider a la variable fuerzaDeseada
@@ -824,71 +831,55 @@ private float CalcularVoltaje(Vector3 posicion)
 
     public void ActivarSensorDetalleEnCargaCercana()
     {
-        // Verifica si ya existe al menos un sensor detalle en la escena
-        GameObject sensorDetalle = sensores.Find(sensor => sensor.CompareTag("sensor detalle"));
-
-        if (sensorDetalle == null) return;  // Si no existe un sensor detalle, termina la ejecución
-
-        // Encuentra la carga más cercana
-        GameObject cargaMasCercana = ObtenerCargaMasCercana(sensorDetalle.transform.position);
-
-        if (cargaMasCercana != null)
+        foreach (var sensor in sensores)
         {
-            // Coloca el sensor en la carga más cercana
-            sensorDetalle.transform.position = cargaMasCercana.transform.position;
-
-            // Excluye la carga de la suma de cargas
-            ExcluirDeSumaDeCargas(cargaMasCercana);
-
-            // Calcula el campo eléctrico de las demás cargas multiplicado por el valor de la carga actual
-            CalcularCampoElectricoSobreCarga(sensorDetalle, cargaMasCercana);
-        }
-    }
-
-    private GameObject ObtenerCargaMasCercana(Vector3 posicionSensor)
-    {
-        GameObject cargaMasCercana = null;
-        float distanciaMinima = Mathf.Infinity;  // Inicializa con un valor alto
-
-        // Recorre todas las cargas para encontrar la más cercana
-        foreach (GameObject carga in cargas)
-        {
-            float distancia = Vector3.Distance(carga.transform.position, posicionSensor);
-            if (distancia < distanciaMinima)
+            if (sensor.CompareTag("sensor detalle"))
             {
-                cargaMasCercana = carga;
-                distanciaMinima = distancia;
+                GameObject cargaAsociada = ObtenerCargaMasCercana(sensor.transform.position);
+                if (cargaAsociada != null)
+                {
+                    // Mover sensor a la posición de la carga
+                    sensor.transform.position = cargaAsociada.transform.position;
+
+                    // Forzar actualización inmediata
+                    CalcularCampoElectricoSobreCarga(sensor, cargaAsociada);
+                }
             }
         }
-
-        return cargaMasCercana;
     }
+    private GameObject ObtenerCargaMasCercana(Vector3 posicion)
+    {
+        GameObject cargaCercana = null;
+        float minDistancia = Mathf.Infinity;
 
+        foreach (var carga in cargas)
+        {
+            float distancia = Vector3.Distance(posicion, carga.transform.position);
+            if (distancia < minDistancia)
+            {
+                minDistancia = distancia;
+                cargaCercana = carga;
+            }
+        }
+        return cargaCercana;
+    }
     private void ExcluirDeSumaDeCargas(GameObject cargaExcluida)
     {
         sumaDeCargas.flechasPorFuentePorSensor.Remove(cargaExcluida);  // Elimina la carga de la suma
     }
 
-    private void CalcularCampoElectricoSobreCarga(GameObject sensorDetalle, GameObject carga)
+    private void CalcularCampoElectricoSobreCarga(GameObject sensor, GameObject cargaAsociadaAlSensor)
     {
-        Vector3 posicionSensor = sensorDetalle.transform.position;
-        Vector3 direccion = carga.transform.position - posicionSensor;
-        float distancia = direccion.magnitude;
+        Carga scriptCargaSensor = cargaAsociadaAlSensor.GetComponent<Carga>();
+        Vector3 campoTotal = CalcularFuerzaTotal(sensor.transform.position, cargaAsociadaAlSensor);
+        Vector3 fuerzaFinal = campoTotal * scriptCargaSensor.fuerza * (scriptCargaSensor.esPositiva ? 1 : -1);
 
-        if (distancia > 0.01f) // Evitar división por cero o distancias muy pequeñas
+        var indicador = sensor.GetComponent<IndicadorFuerza>();
+        if (indicador != null)
         {
-            float k = 9e9f;  // Constante de Coulomb (en N·m²/C²)
-            float cargaValor = carga.GetComponent<Carga>().fuerza;  // Obtener el valor de la carga
-            float campoElectrico = k * cargaValor / (distancia * distancia);
-
-            // El campo eléctrico generado por la carga sobre el sensor
-            Vector3 campo = campoElectrico * direccion.normalized;
-
-            // Mostrar el valor del campo eléctrico en el log (puedes actualizar UI si es necesario)
-            Debug.Log($"Campo eléctrico sobre la carga: {campo}");
+            indicador.ActualizarDireccion(fuerzaFinal);
         }
     }
-
 
     // Método para generar la grilla de sensores
     private void GenerarSensoresEnGrid()
@@ -926,25 +917,39 @@ private float CalcularVoltaje(Vector3 posicion)
     }
 
     private void ToggleLineasDeCampo()
-{
-    lineasDeCampoActivas = !lineasDeCampoActivas;
+    {
+        lineasDeCampoActivas = !lineasDeCampoActivas;
 
-    if (lineasDeCampoActivas)
-    {
-        GenerarSensoresEnGrid();
-        lineasDeCampoBtn.image.color = selectedColor;
-    }
-    else
-    {
-        // Eliminar solo los sensores de línea
-        foreach (var sensor in sensores.FindAll(s => s.CompareTag("sensor linea")))
+        if (lineasDeCampoActivas)
         {
-            Destroy(sensor);
+            GenerarSensoresEnGrid();
+            lineasDeCampoBtn.image.color = selectedColor;
         }
-        sensores.RemoveAll(s => s.CompareTag("sensor linea"));
-        lineasDeCampoBtn.image.color = normalColorVectores; // O tu color normal
+        else
+        {
+            // Eliminar solo los sensores de línea
+            foreach (var sensor in sensores.FindAll(s => s.CompareTag("sensor linea")))
+            {
+                Destroy(sensor);
+            }
+            sensores.RemoveAll(s => s.CompareTag("sensor linea"));
+            lineasDeCampoBtn.image.color = normalColorVectores; // O tu color normal
+        }
     }
-}
+    private void CrearPlano(bool esPositivo)
+    {
+        GameObject prefab = esPositivo ? planoPositivoPrefab : planoNegativoPrefab;
+        GameObject nuevoPlano = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
+        PlanoFisico1 scriptPlano = nuevoPlano.GetComponent<PlanoFisico1>();
+        if (scriptPlano != null)
+        {
+            // 1) Fuerza siempre positiva
+            scriptPlano.fuerza = sliderFuerza.value;
+            // 2) Decide en Inspector o con este bool si es positivo o no
+            scriptPlano.esPositivo = esPositivo;
+        }
+        planos.Add(nuevoPlano);
+    }
 
 
 

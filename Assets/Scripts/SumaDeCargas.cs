@@ -154,20 +154,24 @@ public class SumaDeCargas : MonoBehaviour
             if (!sensor.CompareTag("sensor detalle"))
                 continue;
 
-            // Si no existe entrada para esta fuente, la creamos
+            // Si no existe una entrada para esta fuente en el diccionario, la creamos
             if (!flechasPorFuentePorSensor.ContainsKey(fuente))
             {
                 flechasPorFuentePorSensor[fuente] = new Dictionary<GameObject, GameObject>();
             }
+
             Dictionary<GameObject, GameObject> flechasPorSensor = flechasPorFuentePorSensor[fuente];
 
+            // Revisamos si ya existe una flecha para este (fuente, sensor)
             GameObject flecha;
             if (flechasPorSensor.TryGetValue(sensor, out flecha))
             {
+                // Si existe, solo la actualizamos
                 ActualizarFlechaParaSensor(sensor, fuente, flecha);
             }
             else
             {
+                // Si no existe, la creamos y luego la actualizamos
                 flecha = Instantiate(flechaPrefab);
                 flechasPorSensor[sensor] = flecha;
                 ActualizarFlechaParaSensor(sensor, fuente, flecha);

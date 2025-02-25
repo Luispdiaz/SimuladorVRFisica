@@ -1,123 +1,142 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
-public class BarrasCargadasManager : MonoBehaviour
+public class MenuControl : MonoBehaviour
 {
-    [Header("Elementos de UI")]
-    public GameObject subMenuBarras;
-    public GameObject tituloSubMenu;
-    public Button insertarBarrasPositivasBtn;  // Botón para insertar barras positivas
-    public Button insertarBarrasNegativasBtn;  // Botón para insertar barras negativas
-    public Button insertarBarrasAlternadasBtn; // Botón para insertar barras alternadas
-    public Button closeButton;
-    public Material materialAzulTransparente;
+    [Header("Plano Configuration")]
+    public Slider planoSlider;
+    public GameObject planoPrefab;
+    public float offsetPosicion = 15f;
 
-    [Header("Configuración de Spawn")]
-    public Vector3 spawnPosition;
-    public float separacionVertical = 1.5f;
-    public float largoBarra = 3.0f;
-    public float profundidadCampo = 1.0f;
+    [Header("Botones Planos")]
+    public List<Button> botonesPositivos = new List<Button>();
+    public List<Button> botonesNegativos = new List<Button>();
 
-    [Header("Prefab")]
-    public GameObject barraPositivaPrefab;
-    public GameObject barraNegativaPrefab;
+    [Header("Carga Configuration")]
+    public Slider horizontalSlider;
+    public Slider verticalSlider;
+    public Slider velocidadSlider;
 
-    [Header("Visualización del Campo Eléctrico Uniforme")]
-    [Tooltip("Color del campo eléctrico con transparencia.")]
-    public Color colorCampo = new Color(1f, 1f, 0f, 0.5f); // Amarillo semitransparente
+    [Header("Spawn Point")]
+    public Transform spawnPoint;
 
-    private GameObject campoUniforme;
+    [Header("Referencias Explícitas de Botones")]
+    public Button positivoArribaBtn;
+    public Button positivoAbajoBtn;
+    public Button positivoIzquierdaBtn;
+    public Button positivoDerechaBtn;
+    public Button negativoArribaBtn;
+    public Button negativoAbajoBtn;
+    public Button negativoIzquierdaBtn;
+    public Button negativoDerechaBtn;
+
+    private readonly string[] direcciones = { "Arriba", "Abajo", "Izquierda", "Derecha" };
 
     private void Start()
     {
-        if (subMenuBarras != null)
-            subMenuBarras.SetActive(false);
-        if (tituloSubMenu != null)
-            tituloSubMenu.SetActive(false);
+        ConfigurarSliders();
+        ConfigurarBotonesPlanosExplicitamente();
+    }
+    void ConfigurarBotonesPlanosExplicitamente()
+    {
+        // Botones positivos
+        positivoArribaBtn.onClick.AddListener(() => CrearPlano("Arriba", true));
+        positivoAbajoBtn.onClick.AddListener(() => CrearPlano("Abajo", true));
+        positivoIzquierdaBtn.onClick.AddListener(() => CrearPlano("Izquierda", true));
+        positivoDerechaBtn.onClick.AddListener(() => CrearPlano("Derecha", true));
 
-        if (insertarBarrasPositivasBtn != null)
-            insertarBarrasPositivasBtn.onClick.AddListener(InsertarBarrasPositivas);  // Asignamos función para barras positivas
-
-        if (insertarBarrasNegativasBtn != null)
-            insertarBarrasNegativasBtn.onClick.AddListener(InsertarBarrasNegativas);  // Asignamos función para barras negativas
-
-        if (insertarBarrasAlternadasBtn != null)
-            insertarBarrasAlternadasBtn.onClick.AddListener(InsertarBarrasAlternadas);  // Asignamos función para barras alternadas
-
-        if (closeButton != null)
-            closeButton.onClick.AddListener(CerrarSubMenu);
+        // Botones negativos
+        negativoArribaBtn.onClick.AddListener(() => CrearPlano("Arriba", false));
+        negativoAbajoBtn.onClick.AddListener(() => CrearPlano("Abajo", false));
+        negativoIzquierdaBtn.onClick.AddListener(() => CrearPlano("Izquierda", false));
+        negativoDerechaBtn.onClick.AddListener(() => CrearPlano("Derecha", false));
     }
 
-    public void MostrarSubMenuBarras()
+    void ConfigurarSliders()
     {
-        if (subMenuBarras != null)
-            subMenuBarras.SetActive(true);
-        if (tituloSubMenu != null)
-            tituloSubMenu.SetActive(true);
+        planoSlider.minValue = 0.1f;
+        planoSlider.maxValue = 20f;
+        horizontalSlider.minValue = -90f;
+        horizontalSlider.maxValue = 90f;
+        verticalSlider.minValue = -90f;
+        verticalSlider.maxValue = 90f;
+        velocidadSlider.minValue = 0f;
+        velocidadSlider.maxValue = 100f;
     }
 
-    public void CerrarSubMenu()
+    void ConfigurarBotonesPlanos()
     {
-        if (subMenuBarras != null)
-            subMenuBarras.SetActive(false);
-        if (tituloSubMenu != null)
-            tituloSubMenu.SetActive(false);
-    }
-
-    // Insertar ambas barras positivas
-    private void InsertarBarrasPositivas()
-    {
-        if (barraPositivaPrefab == null)
+        // Configurar botones positivos
+        for (int i = 0; i < botonesPositivos.Count; i++)
         {
-            Debug.LogError("Falta asignar el prefab de la barra positiva.");
-            return;
+            string direccion = direcciones[i];
+            botonesPositivos[i].onClick.AddListener(() => CrearPlano(direccion, true));
         }
 
-        // Instanciar ambas barras positivas
-        Vector3 posicionBarraInferior = spawnPosition;
-        Instantiate(barraPositivaPrefab, posicionBarraInferior, Quaternion.identity);
-
-        Vector3 posicionBarraSuperior = spawnPosition + Vector3.up * separacionVertical;
-        Instantiate(barraPositivaPrefab, posicionBarraSuperior, Quaternion.identity);
-
+        // Configurar botones negativos
+        for (int i = 0; i < botonesNegativos.Count; i++)
+        {
+            string direccion = direcciones[i];
+            botonesNegativos[i].onClick.AddListener(() => CrearPlano(direccion, false));
+        }
     }
 
-    // Insertar ambas barras negativas
-    private void InsertarBarrasNegativas()
+    public void CrearPlano(string direccion, bool esPositivo)
     {
-        if (barraNegativaPrefab == null)
+        if (planoPrefab == null) return;
+
+        Vector3 posicion = spawnPoint != null ? spawnPoint.position : Vector3.zero;
+        Vector3 rotacion = Vector3.zero;
+
+        switch (direccion)
         {
-            Debug.LogError("Falta asignar el prefab de la barra negativa.");
-            return;
+            case "Arriba":
+                posicion = new Vector3(0, esPositivo ? offsetPosicion : -offsetPosicion, 0);
+                rotacion = esPositivo ? new Vector3(0, 0, 0) : new Vector3(180, 0, 0);
+                break;
+
+            case "Abajo":
+                posicion = new Vector3(0, esPositivo ? -offsetPosicion : offsetPosicion, 0);
+                rotacion = esPositivo ? new Vector3(180, 0, 0) : new Vector3(0, 0, 0);
+                break;
+
+            case "Izquierda":
+                posicion = new Vector3(esPositivo ? -offsetPosicion : offsetPosicion, 0, 0);
+                rotacion = esPositivo ? new Vector3(0, 0, 90) : new Vector3(0, 0, 270);
+                break;
+
+            case "Derecha":
+                posicion = new Vector3(esPositivo ? offsetPosicion : -offsetPosicion, 0, 0);
+                rotacion = esPositivo ? new Vector3(0, 0, 270) : new Vector3(0, 0, 90);
+                break;
         }
 
-        // Instanciar ambas barras negativas
-        Vector3 posicionBarraInferior = spawnPosition;
-        Instantiate(barraNegativaPrefab, posicionBarraInferior, Quaternion.identity);
-
-        Vector3 posicionBarraSuperior = spawnPosition + Vector3.up * separacionVertical;
-        Instantiate(barraNegativaPrefab, posicionBarraSuperior, Quaternion.identity);
-
+        GameObject nuevoPlano = Instantiate(planoPrefab, posicion, Quaternion.Euler(rotacion));
+        ConfigurarPlano(nuevoPlano, esPositivo);
     }
 
-    // Insertar barras alternadas
-    private void InsertarBarrasAlternadas()
+    void ConfigurarPlano(GameObject plano, bool esPositivo)
     {
-        if (barraPositivaPrefab == null || barraNegativaPrefab == null)
+        PlanoFisico fisica = plano.GetComponent<PlanoFisico>();
+        if (fisica != null)
         {
-            Debug.LogError("Faltan asignar los prefabs de las barras positiva y negativa.");
-            return;
+            float valor = esPositivo ? planoSlider.value : -planoSlider.value;
+            fisica.ConfigurarFuerza(valor);
+            fisica.CambiarColor(esPositivo ? Color.red : Color.blue);
         }
-
-        // Instanciar barra positiva
-        Vector3 posicionBarraInferiorPositiva = spawnPosition;
-        Instantiate(barraPositivaPrefab, posicionBarraInferiorPositiva, Quaternion.identity);
-
-        // Instanciar barra negativa
-        Vector3 posicionBarraInferiorNegativa = spawnPosition + Vector3.up * separacionVertical;
-        Instantiate(barraNegativaPrefab, posicionBarraInferiorNegativa, Quaternion.identity);
-
     }
 
-    
+    // Métodos para la Carga (mantenemos la estructura básica)
+    public void LanzarCarga()
+    {
+        Vector3 direccion = CalcularDireccion();
+        float velocidad = velocidadSlider.value;
+        // Lógica de lanzamiento aquí
+    }
+
+    Vector3 CalcularDireccion()
+    {
+        return Quaternion.Euler(verticalSlider.value, horizontalSlider.value, 0) * Vector3.forward;
+    }
 }

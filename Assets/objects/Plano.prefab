@@ -12,6 +12,9 @@ GameObject:
   - component: {fileID: 392517984343039286}
   - component: {fileID: 5302720163014055093}
   - component: {fileID: 4191385028729188772}
+  - component: {fileID: 5900649303606119583}
+  - component: {fileID: -5427714807749809744}
+  - component: {fileID: 5069534737769887409}
   m_Layer: 0
   m_Name: Plano
   m_TagString: Untagged
@@ -109,3 +112,49 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &5900649303606119583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3637808286258318141}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38de43e4001432d4face6acce7048066, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fuerza: 0
+  rend: {fileID: 0}
+  radioAccion: 20
+--- !u!114 &-5427714807749809744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3637808286258318141}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38de43e4001432d4face6acce7048066, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fuerza: 0
+  rend: {fileID: 0}
+  radioAccion: 20
+--- !u!114 &5069534737769887409
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3637808286258318141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c08526c41a8d2154d91e4315ec0bcdee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fuerza: 1
+  rendererPlano: {fileID: 5302720163014055093}
+  materialPositivo: {fileID: 2100000, guid: 2fde3c6587773704689b8c2a85a6f1f5, type: 2}
+  materialNegativo: {fileID: 2100000, guid: 175a526f0cd52594cb6520f64b92dbee, type: 2}

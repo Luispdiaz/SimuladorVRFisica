@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -21,7 +22,9 @@ public class GeometriaPiramidal : MonoBehaviour
     public float radioEsfera = 5f;
     public float angularStepDegrees = 10f;
     public float alturaPiramide = 1f;
+    [Header("Posiciones Independientes")]
     public Vector3 sphereOrigin = Vector3.zero;
+    public Vector3 cylinderOrigin = new Vector3(0, 0, 5f); // Posición diferente por defecto
 
     // Parámetros del cilindro
     public float radioCilindro = 5f;
@@ -44,6 +47,19 @@ public class GeometriaPiramidal : MonoBehaviour
     public Button closeButton;
     private List<GameObject> sensores = new List<GameObject>();
 
+    [Header("Simetría")]
+    public Button botonSimetria;
+    public CargaPuntualManager cargaManager; // Asigna este manager en el Inspector
+    public float fuerzaAtraccion = 10f;
+
+    // Agrega estas variables al inicio de tu clase
+    private bool esferaGenerada = false;
+    private bool cilindroGenerado = false;
+
+
+    private List<GameObject> piramides = new List<GameObject>();
+    public List<GameObject> Piramides => piramides; // Propiedad de solo lectura
+
     private void Start()
     {
         // Ocultar submenús
@@ -55,6 +71,7 @@ public class GeometriaPiramidal : MonoBehaviour
         botonCrearEsfera.onClick.AddListener(CrearEsferaDePiramides);
         botonCrearCilindro.onClick.AddListener(CrearCilindroDePiramides);
         botonCrearPlano.onClick.AddListener(CrearPlano);
+        botonSimetria.onClick.AddListener(AplicarSimetria);
     }
 
     public void CerrarSubMenu()
@@ -65,6 +82,7 @@ public class GeometriaPiramidal : MonoBehaviour
 
     private void CrearEsferaDePiramides()
     {
+        esferaGenerada = true;
         float angularStep = angularStepDegrees * Mathf.Deg2Rad;
         int latDivisions = Mathf.CeilToInt(Mathf.PI / angularStep);
 
@@ -113,7 +131,11 @@ public class GeometriaPiramidal : MonoBehaviour
                 Quaternion rot = Quaternion.LookRotation(tangent, inward) * Quaternion.Euler(0, 45, 0);
 
                 GameObject piramide = Instantiate(piramidePrefab, centerPos, rot);
+
                 piramide.transform.localScale = escala;
+
+                // Agrega la pirámide a la lista
+                piramides.Add(piramide);
 
                 // Asegúrate de que los objetos creados no afecten la física
                 Rigidbody rb = piramide.GetComponent<Rigidbody>();
@@ -138,13 +160,7 @@ public class GeometriaPiramidal : MonoBehaviour
                     }
                 }
 
-                if (arrowPrefab != null)
-                {
-                    Quaternion arrowRot = Quaternion.LookRotation(tangent, normal) * Quaternion.Euler(0, 90, 0);
-                    GameObject arrow = Instantiate(arrowPrefab, centerPos, arrowRot, piramide.transform);
-                    arrow.transform.localPosition = Vector3.zero;
-                    arrow.transform.localScale = new Vector3(arrowThickness, arrowLength, arrowThickness);
-                }
+                
             }
         }
         Debug.Log("Esfera de pirámides creada.");
@@ -155,6 +171,8 @@ public class GeometriaPiramidal : MonoBehaviour
 
     private void CrearCilindroDePiramides()
     {
+        cilindroGenerado = true;
+
         float angularStep = angularStepDegrees * Mathf.Deg2Rad;
         int numDivisionesCircunferencia = Mathf.CeilToInt(2 * Mathf.PI / angularStep);
         float alturaStep = alturaCilindro / divisionesAltura;
@@ -168,8 +186,9 @@ public class GeometriaPiramidal : MonoBehaviour
                 float angulo = j * angularStep;
 
                 Vector3 normal = new Vector3(Mathf.Cos(angulo), 0, Mathf.Sin(angulo));
-                Vector3 centerPos = sphereOrigin + normal * radioCilindro + new Vector3(0, alturaActual, 0);
-                centerPos -= normal * 0.35f; // Acercar 1 unidad hacia el centro
+                // Usar cylinderOrigin en lugar de sphereOrigin
+                Vector3 centerPos = cylinderOrigin + normal * radioCilindro + new Vector3(0, alturaActual, 0);
+                centerPos -= normal * 0.35f;
 
                 // Calculamos los parámetros del parche para el cilindro:
                 float patchWidth = radioCilindro * angularStep;
@@ -191,6 +210,7 @@ public class GeometriaPiramidal : MonoBehaviour
 
                 GameObject piramide = Instantiate(piramidePrefab, centerPos, rot);
                 piramide.transform.localScale = escala;
+                piramides.Add(piramide); // <--- Añade esta línea
 
                 // Asegúrate de que los objetos creados no afecten la física
                 Rigidbody rb = piramide.GetComponent<Rigidbody>();
@@ -215,13 +235,7 @@ public class GeometriaPiramidal : MonoBehaviour
                     }
                 }
 
-                if (arrowPrefab != null)
-                {
-                    Quaternion arrowRot = Quaternion.LookRotation(tangent, normal) * Quaternion.Euler(0, 45, 0);
-                    GameObject arrow = Instantiate(arrowPrefab, centerPos, arrowRot, piramide.transform);
-                    arrow.transform.localPosition = Vector3.zero;
-                    arrow.transform.localScale = new Vector3(arrowThickness, arrowLength, arrowThickness);
-                }
+               
             }
         }
         Debug.Log("Cilindro de pirámides creado.");
@@ -239,6 +253,7 @@ public class GeometriaPiramidal : MonoBehaviour
 
         GameObject plane = Instantiate(planoPrefab, planePosition, planeRot);
         plane.transform.localScale = new Vector3(anchoPlano, altoPlano, 1);
+
 
         // Establecer el tamaño de la cuadrícula a 3x3 para obtener 9 vectores
         int gridSizeX = 3;
@@ -266,5 +281,106 @@ public class GeometriaPiramidal : MonoBehaviour
         }
 
         Debug.Log("Plano insertado con 9 vectores.");
+    }
+
+    private void AplicarSimetria()
+    {
+        // --- LÓGICA PARA ESFERA (CARGAS) ---
+        if (esferaGenerada && cargaManager != null && cargaManager.Cargas.Count > 0)
+        {
+            GameObject cargaCercana = null;
+            float minDistancia = Mathf.Infinity;
+
+            foreach (var carga in cargaManager.Cargas)
+            {
+                float distancia = Vector3.Distance(carga.transform.position, sphereOrigin);
+                if (distancia < minDistancia)
+                {
+                    minDistancia = distancia;
+                    cargaCercana = carga;
+                }
+            }
+
+            if (cargaCercana != null)
+            {
+                cargaCercana.transform.position = sphereOrigin;
+                cargaCercana.transform.rotation = Quaternion.identity; // Aseguramos rotación neutra
+                Debug.Log($"Carga {cargaCercana.name} centrada en esfera");
+            }
+        }
+        else if (!esferaGenerada && cargaManager != null && cargaManager.Cargas.Count > 0)
+        {
+            Debug.LogWarning("No se puede reposicionar carga: Esfera no generada");
+        }
+
+        // --- LÓGICA PARA CILINDRO (LÍNEAS) ---
+        if (cilindroGenerado && cargaManager != null && cargaManager.lineasCarga.Count > 0)
+        {
+            GameObject lineaCercana = null;
+            float minDistancia = Mathf.Infinity;
+
+            foreach (var linea in cargaManager.lineasCarga)
+            {
+                float distancia = Vector3.Distance(linea.transform.position, cylinderOrigin);
+                if (distancia < minDistancia)
+                {
+                    minDistancia = distancia;
+                    lineaCercana = linea;
+                }
+            }
+
+            if (lineaCercana != null)
+            {
+                // Reposicionamiento en un solo paso
+                lineaCercana.transform.SetPositionAndRotation(
+                    cylinderOrigin - (Vector3.up * (lineaCercana.transform.localScale.y / 2f)),
+                    Quaternion.identity
+                );
+            }
+        }
+
+        // --- LÓGICA PARA SENSORES ---
+        if (piramides != null && piramides.Count > 0 && cargaManager != null && cargaManager.sensores.Count > 0)
+        {
+            foreach (var sensor in cargaManager.sensores)
+            {
+                if (!sensor.activeInHierarchy) continue;
+
+                // Usar LINQ para encontrar la pirámide más cercana (de cualquier forma)
+                GameObject piramideCercana = piramides
+                    .OrderBy(p => Vector3.Distance(sensor.transform.position, p.transform.position))
+                    .FirstOrDefault();
+
+                if (piramideCercana != null)
+                {
+                    sensor.transform.SetPositionAndRotation(
+                        piramideCercana.transform.position,
+                        piramideCercana.transform.rotation
+                    );
+                    Debug.Log($"Sensor {sensor.name} movido a pirámide más cercana");
+                }
+            }
+        }
+    }
+    // Método para limpiar todas las formas
+    public void LimpiarFormas(bool limpiarEsfera = true, bool limpiarCilindro = true)
+    {
+        // Limpiar pirámides según la forma
+        List<GameObject> piramidesABorrar = new List<GameObject>();
+        foreach (var p in piramides)
+        {
+            if (limpiarEsfera && p.name.Contains("Esfera")) piramidesABorrar.Add(p);
+            if (limpiarCilindro && p.name.Contains("Cilindro")) piramidesABorrar.Add(p);
+        }
+
+        foreach (var p in piramidesABorrar)
+        {
+            piramides.Remove(p);
+            Destroy(p);
+        }
+
+        // Actualizar banderas
+        if (limpiarEsfera) esferaGenerada = false;
+        if (limpiarCilindro) cilindroGenerado = false;
     }
 }
