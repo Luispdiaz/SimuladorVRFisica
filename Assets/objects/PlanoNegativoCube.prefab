@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockId: f8766c17-aaf8-4b55-9431-de8deea83842
-  instanceId: 40f46f2c-d2fb-414d-92db-a53d116cd169
+  instanceId: a4d1d4e9-8409-4b46-aad6-fa824512d325
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: f8338144-8280-4ff6-9455-ae2bb9c20fe8
@@ -154,10 +154,10 @@ GameObject:
   - component: {fileID: 8683049402257477145}
   - component: {fileID: 6470321810757398467}
   - component: {fileID: 3932594652271981724}
-  - component: {fileID: -7031172530383935849}
+  - component: {fileID: 3035957737938385731}
   m_Layer: 0
   m_Name: PlanoNegativoCube
-  m_TagString: Untagged
+  m_TagString: PlanoFisico
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -279,7 +279,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &-7031172530383935849
+--- !u!114 &3035957737938385731
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

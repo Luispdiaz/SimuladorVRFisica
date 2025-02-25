@@ -338,6 +338,21 @@ public class GeometriaPiramidal : MonoBehaviour
                 );
             }
         }
+        // --- LÓGICA PARA PLANOS EN CILINDRO ---
+        if (cilindroGenerado && cargaManager != null)
+        {
+            // Obtener planos creados en CargaPuntualManager
+            List<GameObject> planos = cargaManager.ObtenerPlanos()
+                .Where(p => p != null && p.CompareTag("PlanoFisico"))
+                .ToList();
+
+            foreach (var plano in planos)
+            {
+                // Solo mover al centro del cilindro (sin modificar rotación/ escala)
+                Vector3 posicionPlano = cylinderOrigin + new Vector3(0, -alturaCilindro / 2, 0);
+                plano.transform.position = posicionPlano;
+            }
+        }
 
         // --- LÓGICA PARA SENSORES ---
         if (piramides != null && piramides.Count > 0 && cargaManager != null && cargaManager.sensores.Count > 0)

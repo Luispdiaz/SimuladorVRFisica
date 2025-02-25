@@ -55,8 +55,9 @@ public class VectoresDesdeSensor : MonoBehaviour
     {
         Carga cargaScript = fuente.GetComponent<Carga>();
         LineaCarga lineaScript = fuente.GetComponent<LineaCarga>();
+        PlanoCubo planoScript = fuente.GetComponent<PlanoCubo>();  // Usar tu componente
 
-        if (cargaScript == null && lineaScript == null)
+        if (cargaScript == null && lineaScript == null && planoScript == null)
             return;
 
         Vector3 direccionFuerza = Vector3.zero;
@@ -67,6 +68,10 @@ public class VectoresDesdeSensor : MonoBehaviour
         else if (lineaScript != null)
         {
             direccionFuerza = CalcularFuerzaLinea(lineaScript, sensor.transform.position);
+        }
+        else if (planoScript != null)  // Lógica para planos
+        {
+            direccionFuerza = planoScript.CalcularFuerzaPlano(sensor.transform.position);
         }
 
         // Si la fuerza es cero, no mostramos la flecha
@@ -107,10 +112,15 @@ public class VectoresDesdeSensor : MonoBehaviour
         flecha.transform.position = sensor.transform.position;
 
         // Actualiza el color de la flecha según el tipo de fuente
-        ActualizarColor(flecha,
-            cargaScript != null
-                ? (cargaScript.esPositiva ? Color.red : Color.blue)
-                : (lineaScript.esPositiva ? Color.magenta : Color.cyan));
+        Color color;
+        if (cargaScript != null)
+            color = cargaScript.esPositiva ? Color.red : Color.blue;
+        else if (lineaScript != null)
+            color = lineaScript.esPositiva ? Color.magenta : Color.cyan;
+        else
+            color = planoScript.esPositivo ? new Color(1f, 0.4f, 0.6f) : new Color(0.5f, 0f, 0.5f);  // Usar tu variable
+
+        ActualizarColor(flecha, color);
     }
 
 
@@ -145,6 +155,23 @@ public class VectoresDesdeSensor : MonoBehaviour
         float magnitud = linea.densidadCarga / distancia;
         if (!linea.esPositiva)
             magnitud *= -1;
+
+        return magnitud * direccion.normalized;
+    }
+    private Vector3 CalcularFuerzaPlano(PlanoCubo plano, Vector3 posicionSensor)
+    {
+        Collider collider = plano.GetComponent<Collider>();
+        if (collider == null) return Vector3.zero;
+
+        // Usa la lógica de tu componente PlanoCubo
+        Vector3 puntoCercano = collider.ClosestPoint(posicionSensor);
+        Vector3 direccion = posicionSensor - puntoCercano;
+        float distancia = direccion.magnitude;
+
+        if (distancia < 0.01f) return Vector3.zero;
+
+        float magnitud = plano.fuerza / distancia;
+        if (!plano.esPositivo) magnitud = -magnitud;
 
         return magnitud * direccion.normalized;
     }

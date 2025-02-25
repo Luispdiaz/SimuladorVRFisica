@@ -69,25 +69,45 @@ public class LineasPunteadas : MonoBehaviour
         {
             if (linea.start == null || linea.end == null) continue;
 
-            Vector3 startPoint;
-            Collider col = linea.start.GetComponent<Collider>();
+            Vector3 startPosition;
+            Vector3 endPosition = linea.end.position; // Centro del sensor
 
-            // Si es una carga, línea o plano, usa el collider para el punto más cercano
-            if (col != null)
+            // Determinar tipo de objeto inicial
+            bool esCarga = linea.start.GetComponent<Carga>() != null;
+            Collider startCollider = linea.start.GetComponent<Collider>();
+
+            if (esCarga)
             {
-                startPoint = col.ClosestPoint(linea.end.position);
+                // Cargas: centro del collider
+                startPosition = startCollider != null ?
+                    startCollider.bounds.center :
+                    linea.start.position;
+            }
+            else if (startCollider != null)
+            {
+                // Líneas/Planos: punto más cercano al sensor
+                startPosition = startCollider.ClosestPoint(endPosition);
             }
             else
             {
-                startPoint = linea.start.position;
+                // Caso por defecto
+                startPosition = linea.start.position;
             }
 
+            Vector3 direction = (endPosition - startPosition).normalized;
+            Quaternion lineRotation = Quaternion.LookRotation(direction);
+
+            // Actualizar puntos
             for (int i = 0; i <= numberOfPoints; i++)
             {
                 float t = (float)i / numberOfPoints;
-                Vector3 posicion = Vector3.Lerp(startPoint, linea.end.position, t);
+                Vector3 posicion = Vector3.Lerp(startPosition, endPosition, t);
+
                 if (i < linea.puntos.Count && linea.puntos[i] != null)
+                {
                     linea.puntos[i].transform.position = posicion;
+                    linea.puntos[i].transform.rotation = lineRotation;
+                }
             }
         }
     }

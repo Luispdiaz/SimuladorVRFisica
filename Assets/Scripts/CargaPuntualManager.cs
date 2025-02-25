@@ -41,6 +41,10 @@ public class CargaPuntualManager : MonoBehaviour
     public Button insertarPlanoPositivoBtn;
     public Button insertarPlanoNegativoBtn;
 
+    [Header("Sensor Individual Dirección")]
+    public Button sensorIndividualBtn; // Asignar en Inspector
+    public GameObject sensorIndividualDireccionPrefab; // Asignar nuevo prefab en Inspector
+
     public Slider sliderFuerza;
     public float fuerzaDeseada = 1f;
     public TextMeshProUGUI textoFuerza;
@@ -51,6 +55,7 @@ public class CargaPuntualManager : MonoBehaviour
     private List<GameObject> planos = new List<GameObject>();
     private List<GameObject> cargas = new List<GameObject>();
     public List<GameObject> sensores = new List<GameObject>();
+    public List<GameObject> ObtenerPlanos() => planos;
     // Posición inicial de cada sensor detalle cuando activamos la Suma de Cargas
     private Dictionary<GameObject, Vector3> posInicialSensoresDetalle = new Dictionary<GameObject, Vector3>();
     private Color normalColorRecalcular;
@@ -120,6 +125,7 @@ public class CargaPuntualManager : MonoBehaviour
         lineasDeCampoBtn.onClick.AddListener(ToggleLineasDeCampo);
         insertarPlanoPositivoBtn.onClick.AddListener(IngresarPlanoPositivo);
         insertarPlanoNegativoBtn.onClick.AddListener(IngresarPlanoNegativo);
+        sensorIndividualBtn.onClick.AddListener(CrearSensorIndividual);
 
 
         lineasPunteadas = GetComponent<LineasPunteadas>() ?? gameObject.AddComponent<LineasPunteadas>();
@@ -303,13 +309,12 @@ public class CargaPuntualManager : MonoBehaviour
         }
         foreach (var sensor in sensores)
         {
-            if (sensor.CompareTag("sensor linea"))
+            if (sensor.CompareTag("SensorIndividualDireccion") ||
+               sensor.CompareTag("sensor linea"))
             {
-                // Calcular la fuerza total que actúa sobre el sensor
+                // Calcular fuerza usando la posición ACTUAL del sensor
                 Vector3 fuerza = CalcularFuerzaTotal(sensor.transform.position);
                 var indicador = sensor.GetComponent<IndicadorDireccion>();
-
-                // Actualizar dirección y magnitud del indicador (flecha)
                 indicador.ActualizarDireccion(fuerza);
             }
         }
@@ -517,6 +522,7 @@ public class CargaPuntualManager : MonoBehaviour
             {
                 sumaDeCargas.CrearOActualizarFlechaParaFuente(l);
             }
+            foreach (var p in planos) sumaDeCargas.CrearOActualizarFlechaParaFuente(p);
         }
         // Modo VectoresDesdeSensor
         else if (turnoVectoresDesdeSensorActivo)
@@ -666,6 +672,11 @@ public class CargaPuntualManager : MonoBehaviour
                 foreach (var l in lineasCarga)
                 {
                     lineasPunteadas.CrearLineasPunteadas(l.transform, sensor.transform);
+                }
+                // Añadir planos aquí
+                foreach (var p in planos)
+                {
+                    lineasPunteadas.CrearLineasPunteadas(p.transform, sensor.transform);
                 }
             }
         }
@@ -938,6 +949,7 @@ public class CargaPuntualManager : MonoBehaviour
     {
         GameObject prefab = esPositivo ? planoPositivoPrefab : planoNegativoPrefab;
         GameObject nuevoPlano = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
+        nuevoPlano.tag = "PlanoFisico"; // Asignar tag identificador
         PlanoCubo scriptPlano = nuevoPlano.GetComponent<PlanoCubo>(); // Cambiado de PlanoFisico1 a PlanoCubo
         if (scriptPlano != null)
         {
@@ -945,6 +957,19 @@ public class CargaPuntualManager : MonoBehaviour
             scriptPlano.esPositivo = esPositivo;
         }
         planos.Add(nuevoPlano);
+        if (turnoSumaDeCargasActivo) sumaDeCargas.CrearOActualizarFlechaParaFuente(nuevoPlano);
+    }
+    private void CrearSensorIndividual()
+    {
+        GameObject nuevoSensor = Instantiate(
+            sensorIndividualDireccionPrefab, // Usar prefab específico
+            spawnPoint.position,
+            Quaternion.identity
+        );
+
+        nuevoSensor.tag = "SensorIndividualDireccion"; // Tag único
+        sensores.Add(nuevoSensor);
+        Debug.Log("Sensor individual creado con funcionalidad de arrastre");
     }
 
 

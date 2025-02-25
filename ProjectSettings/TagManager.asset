@@ -10,6 +10,8 @@ TagManager:
   - carga
   - sensor linea
   - plano
+  - SensorIndividualDireccion
+  - PlanoFisico
   layers:
   - Default
   - TransparentFX

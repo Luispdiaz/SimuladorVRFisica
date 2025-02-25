@@ -1,9 +1,9 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 
-// Nuevo componente para almacenar la dirección original
+// Nuevo componente para almacenar la direcciÃ³n original
 public class FlechaData : MonoBehaviour
 {
     public Vector3 direccion;
@@ -15,13 +15,13 @@ public class SumaDeCargas : MonoBehaviour
     public GameObject flechaPrefab;
     // Lista de sensores (deben tener el tag "sensor detalle")
     public List<GameObject> sensores = new List<GameObject>();
-    // Ahora, para cada fuente (carga o línea) se guarda un diccionario que asocia cada sensor a su flecha
+    // Ahora, para cada fuente (carga o lÃ­nea) se guarda un diccionario que asocia cada sensor a su flecha
     public Dictionary<GameObject, Dictionary<GameObject, GameObject>> flechasPorFuentePorSensor = new Dictionary<GameObject, Dictionary<GameObject, GameObject>>();
-    // Para llevar un seguimiento de la posición final de la flecha para cada sensor
+    // Para llevar un seguimiento de la posiciÃ³n final de la flecha para cada sensor
     private Dictionary<GameObject, Vector3> posicionesFinalesPorSensor = new Dictionary<GameObject, Vector3>();
 
     public float factorEscalaFuerza = 0.1f;
-    [Header("Animación")]
+    [Header("AnimaciÃ³n")]
     public float duracionAnimacion = 3.0f;
     public float retardoEntreFlechas = 0.5f;
     private bool animacionEnCurso = false;
@@ -46,7 +46,7 @@ public class SumaDeCargas : MonoBehaviour
             List<GameObject> flechasDelSensor = new List<GameObject>();
             Vector3 posicionSensor = sensor.transform.position;
 
-            // 1. Recolectar datos de las flechas (dirección y longitud)
+            // 1. Recolectar datos de las flechas (direcciÃ³n y longitud)
             List<Vector3> direcciones = new List<Vector3>();
             List<float> longitudes = new List<float>();
             foreach (var fuente in flechasPorFuentePorSensor.Keys)
@@ -61,12 +61,12 @@ public class SumaDeCargas : MonoBehaviour
                         {
                             flechasDelSensor.Add(flecha);
                             float longitud = flecha.transform.Find("Cuerpo").localScale.y * 2;
-                            direcciones.Add(data.direccion.normalized); // Dirección normalizada
+                            direcciones.Add(data.direccion.normalized); // DirecciÃ³n normalizada
                             longitudes.Add(longitud); // Longitud del vector
                         }
                         else
                         {
-                            Debug.LogWarning("FlechaData es null en una de las flechas. Asegúrate de que todas las flechas tengan el componente FlechaData.");
+                            Debug.LogWarning("FlechaData es null en una de las flechas. AsegÃºrate de que todas las flechas tengan el componente FlechaData.");
                         }
                     }
                     else
@@ -104,12 +104,12 @@ public class SumaDeCargas : MonoBehaviour
 
                     if (i == 0)
                     {
-                        // Primera flecha estática
+                        // Primera flecha estÃ¡tica
                         flecha.transform.position = fin;
                     }
                     else
                     {
-                        // Flechas posteriores: animar desde el sensor hasta la posición acumulada
+                        // Flechas posteriores: animar desde el sensor hasta la posiciÃ³n acumulada
                         yield return StartCoroutine(AnimarFlecha(
                             flecha.transform,
                             posicionSensor, // Siempre inician en el sensor
@@ -127,20 +127,22 @@ public class SumaDeCargas : MonoBehaviour
 
     private IEnumerator AnimarFlecha(Transform flecha, Vector3 inicio, Vector3 fin, Quaternion rotacion)
     {
-        float tiempo = 0;
+        if (flecha == null) yield break; // Salir si la flecha fue destruida
 
-        // Mantener rotación fija durante la animación
+        float tiempo = 0;
         flecha.rotation = rotacion;
 
         while (tiempo < duracionAnimacion)
         {
+            if (flecha == null) yield break; // Validar en cada frame
             float t = Mathf.SmoothStep(0f, 1f, tiempo / duracionAnimacion);
             flecha.position = Vector3.Lerp(inicio, fin, t);
             tiempo += Time.deltaTime;
             yield return null;
         }
 
-        flecha.position = fin;
+        if (flecha != null)
+            flecha.position = fin;
     }
     /// <summary>
     /// Crea o actualiza las flechas para la fuente en todos los sensores detalle.
@@ -180,18 +182,17 @@ public class SumaDeCargas : MonoBehaviour
     }
 
     /// <summary>
-    /// Actualiza la flecha para un sensor específico y una fuente dada.
+    /// Actualiza la flecha para un sensor especÃ­fico y una fuente dada.
     /// </summary>
     private void ActualizarFlechaParaSensor(GameObject sensor, GameObject fuente, GameObject flecha)
     {
-        // Verificamos que la fuente tenga componente Carga o LineaCarga
         Carga cargaScript = fuente.GetComponent<Carga>();
         LineaCarga lineaScript = fuente.GetComponent<LineaCarga>();
+        PlanoCubo planoScript = fuente.GetComponent<PlanoCubo>(); // Nuevo: Componente Plano
 
-        if (cargaScript == null && lineaScript == null)
+        if (cargaScript == null && lineaScript == null && planoScript == null)
             return;
 
-        // Calcular la dirección de la fuerza desde la fuente respecto a la posición del sensor
         Vector3 direccionFuerza = Vector3.zero;
         if (cargaScript != null)
         {
@@ -201,8 +202,12 @@ public class SumaDeCargas : MonoBehaviour
         {
             direccionFuerza = CalcularFuerzaLinea(lineaScript, sensor.transform.position);
         }
+        else if (planoScript != null) // Nuevo: Caso para planos
+        {
+            direccionFuerza = CalcularFuerzaPlano(planoScript, sensor.transform.position);
+        }
 
-        // Si la fuerza es cero (el sensor está en la misma posición que la carga), no mostramos la flecha
+        // Si la fuerza es cero (el sensor estÃ¡ en la misma posiciÃ³n que la carga), no mostramos la flecha
         if (direccionFuerza.magnitude <= 0.01f)
         {
             flecha.SetActive(false); // Desactivamos la flecha si la fuerza es cero
@@ -212,7 +217,7 @@ public class SumaDeCargas : MonoBehaviour
         // Si la fuerza no es cero, activamos la flecha
         flecha.SetActive(true);
 
-        // Ajustar escala y posición de las partes de la flecha
+        // Ajustar escala y posiciÃ³n de las partes de la flecha
         float magnitudFuerza = direccionFuerza.magnitude;
         float longitudFlecha = 0f;
 
@@ -235,25 +240,30 @@ public class SumaDeCargas : MonoBehaviour
             longitudFlecha = nuevaEscala.y * 2;
         }
 
-        // Establecer la rotación de la flecha
+        // Establecer la rotaciÃ³n de la flecha
         flecha.transform.rotation = Quaternion.LookRotation(direccionFuerza) * Quaternion.Euler(90, 0, 0);
 
-        // Utilizar una posición inicial para la flecha basada en el sensor
+        // Utilizar una posiciÃ³n inicial para la flecha basada en el sensor
         Vector3 posicionInicial = posicionesFinalesPorSensor.ContainsKey(sensor)
                                         ? posicionesFinalesPorSensor[sensor]
                                         : sensor.transform.position;
-        // Actualizar la posición final para este sensor
+        // Actualizar la posiciÃ³n final para este sensor
         posicionesFinalesPorSensor[sensor] = posicionInicial + (direccionFuerza.normalized * longitudFlecha);
 
         FlechaData data = flecha.GetComponent<FlechaData>();
         if (data == null) data = flecha.AddComponent<FlechaData>();
         data.direccion = direccionFuerza.normalized;
 
-        // Actualizar el color de la flecha según el tipo de carga o línea
-        ActualizarColor(flecha,
-            cargaScript != null
-                ? (cargaScript.esPositiva ? Color.red : Color.blue)
-                : (lineaScript.esPositiva ? Color.magenta : Color.cyan));
+        // Actualizar el color de la flecha segÃºn el tipo de carga o lÃ­nea
+        Color color;
+        if (cargaScript != null)
+            color = cargaScript.esPositiva ? Color.red : Color.blue;
+        else if (lineaScript != null)
+            color = lineaScript.esPositiva ? Color.magenta : Color.cyan;
+        else
+            color = planoScript.esPositivo ? new Color(1f, 0.4f, 0.6f) : new Color(0.5f, 0f, 0.5f);  // Usar tu variable
+
+        ActualizarColor(flecha, color);
     }
 
     private Vector3 CalcularFuerzaCarga(Carga carga, Vector3 posicionSensor)
@@ -286,6 +296,22 @@ public class SumaDeCargas : MonoBehaviour
 
         return magnitud * direccion.normalized;
     }
+    private Vector3 CalcularFuerzaPlano(PlanoCubo plano, Vector3 posicionSensor)
+    {
+        Collider collider = plano.GetComponent<Collider>();
+        if (collider == null) return Vector3.zero;
+
+        Vector3 puntoCercano = collider.ClosestPoint(posicionSensor);
+        Vector3 direccion = posicionSensor - puntoCercano;
+        float distancia = direccion.magnitude;
+
+        if (distancia < 0.01f) return Vector3.zero;
+
+        float magnitud = plano.fuerza / distancia;
+        if (!plano.esPositivo) magnitud *= -1;
+
+        return magnitud * direccion.normalized;
+    }
 
     /// <summary>
     /// Se actualizan todas las flechas para todas las fuentes y sensores.
@@ -294,17 +320,28 @@ public class SumaDeCargas : MonoBehaviour
     {
         if (animacionActiva) return;
 
+        LimpiarFuentesInvalidas();
         posicionesFinalesPorSensor.Clear();
-        foreach (var fuenteEntry in flechasPorFuentePorSensor)
+
+        // AÃ±adir solo planos ACTIVOS y no registrados previamente
+        foreach (var plano in FindObjectsOfType<PlanoCubo>()
+                             .Where(p => p.gameObject.activeInHierarchy
+                                      && !flechasPorFuentePorSensor.ContainsKey(p.gameObject)))
         {
-            GameObject fuente = fuenteEntry.Key;
-            Dictionary<GameObject, GameObject> flechasPorSensor = fuenteEntry.Value;
-            foreach (var sensorEntry in flechasPorSensor)
-            {
-                GameObject sensor = sensorEntry.Key;
-                GameObject flecha = sensorEntry.Value;
-                ActualizarFlechaParaSensor(sensor, fuente, flecha);
-            }
+            CrearOActualizarFlechaParaFuente(plano.gameObject);
+        }
+    }
+
+    public void LimpiarFuentesInvalidas()
+    {
+        var fuentesInvalidas = flechasPorFuentePorSensor
+            .Where(entry => entry.Key == null)
+            .Select(entry => entry.Key)
+            .ToList();
+
+        foreach (var fuente in fuentesInvalidas)
+        {
+            flechasPorFuentePorSensor.Remove(fuente);
         }
     }
 
@@ -319,27 +356,20 @@ public class SumaDeCargas : MonoBehaviour
 
     public void EliminarTodasLasFlechas()
     {
-        List<GameObject> flechasAEliminar = new List<GameObject>();
-        foreach (var fuenteEntry in flechasPorFuentePorSensor)
+        foreach (var fuenteEntry in flechasPorFuentePorSensor.ToList())
         {
-            foreach (var sensorEntry in fuenteEntry.Value)
+            foreach (var sensorEntry in fuenteEntry.Value.ToList())
             {
-                if (sensorEntry.Value != null && sensorEntry.Value.activeInHierarchy)
+                GameObject flecha = sensorEntry.Value;
+                if (flecha != null)
                 {
-                    flechasAEliminar.Add(sensorEntry.Value);
+                    Destroy(flecha); // Destruir inmediatamente
                 }
+                fuenteEntry.Value.Remove(sensorEntry.Key); // Eliminar entrada del diccionario
             }
+            flechasPorFuentePorSensor.Remove(fuenteEntry.Key); // Eliminar fuente del diccionario
         }
         flechasPorFuentePorSensor.Clear();
-
-        foreach (var flecha in flechasAEliminar)
-        {
-            if (flecha != null)
-            {
-                // Se desactiva y luego se destruye
-                flecha.SetActive(false);
-                Destroy(flecha);
-            }
-        }
+        posicionesFinalesPorSensor.Clear();
     }
 }
