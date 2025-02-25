@@ -411,13 +411,12 @@ public class CargaPuntualManager : MonoBehaviour
         // Suponiendo que en CalcularFuerzaTotal ya recorres la lista `planos`
         foreach (var planoObj in planos)
         {
-            var scriptPlano = planoObj.GetComponent<PlanoFisico1>();
+            var scriptPlano = planoObj.GetComponent<PlanoCubo>(); // Cambiado de PlanoFisico1 a PlanoCubo
             if (scriptPlano == null) continue;
 
             Vector3 fuerzaPlano = scriptPlano.CalcularFuerzaPlano(posicionSensor);
             fuerzaTotal += fuerzaPlano;
         }
-
 
         return fuerzaTotal;
     }
@@ -641,9 +640,8 @@ public class CargaPuntualManager : MonoBehaviour
                     {
                         lineasPunteadas.CrearLineasPunteadas(l.transform, sensor.transform);
                     }
-                    foreach (var plano in planos)
+                    foreach (var plano in planos) // Añade los planos
                     {
-                        // Suponiendo que 'sensor' sea el sensor detalle
                         lineasPunteadas.CrearLineasPunteadas(plano.transform, sensor.transform);
                     }
                 }
@@ -940,17 +938,14 @@ public class CargaPuntualManager : MonoBehaviour
     {
         GameObject prefab = esPositivo ? planoPositivoPrefab : planoNegativoPrefab;
         GameObject nuevoPlano = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
-        PlanoFisico1 scriptPlano = nuevoPlano.GetComponent<PlanoFisico1>();
+        PlanoCubo scriptPlano = nuevoPlano.GetComponent<PlanoCubo>(); // Cambiado de PlanoFisico1 a PlanoCubo
         if (scriptPlano != null)
         {
-            // 1) Fuerza siempre positiva
             scriptPlano.fuerza = sliderFuerza.value;
-            // 2) Decide en Inspector o con este bool si es positivo o no
             scriptPlano.esPositivo = esPositivo;
         }
         planos.Add(nuevoPlano);
     }
-
 
 
 }

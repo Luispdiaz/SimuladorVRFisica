@@ -65,26 +65,21 @@ public class LineasPunteadas : MonoBehaviour
 
     void Update()
     {
-        // Actualiza la posición de cada punto en todas las líneas cada frame
         foreach (Linea linea in lineas)
         {
             if (linea.start == null || linea.end == null) continue;
 
-            // Para las cargas (punto) se utiliza directamente la posición del transform.
-            // Para otros objetos (por ejemplo, cilindros), se usa el collider para obtener el punto más cercano.
             Vector3 startPoint;
-            if (linea.start.GetComponent<Carga>() != null)
+            Collider col = linea.start.GetComponent<Collider>();
+
+            // Si es una carga, línea o plano, usa el collider para el punto más cercano
+            if (col != null)
             {
-                startPoint = linea.start.position;
+                startPoint = col.ClosestPoint(linea.end.position);
             }
             else
             {
-                // Se asume que si no es carga, es un objeto con collider, se usa ClosestPoint
-                Collider col = linea.start.GetComponent<Collider>();
-                if (col != null)
-                    startPoint = col.ClosestPoint(linea.end.position);
-                else
-                    startPoint = linea.start.position;
+                startPoint = linea.start.position;
             }
 
             for (int i = 0; i <= numberOfPoints; i++)

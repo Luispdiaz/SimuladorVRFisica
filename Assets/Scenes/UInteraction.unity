@@ -19432,6 +19432,26 @@ PrefabInstance:
       propertyPath: m_BackGroundColor.r
       value: 0.21176471
       objectReference: {fileID: 0}
+    - target: {fileID: 2483171112407822886, guid: f54012181eacade4ea242c65f804720f, type: 3}
+      propertyPath: dynamicResolutionVersion
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2483171112407822886, guid: f54012181eacade4ea242c65f804720f, type: 3}
+      propertyPath: quest2MaxDynamicResolutionScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2483171112407822886, guid: f54012181eacade4ea242c65f804720f, type: 3}
+      propertyPath: quest2MinDynamicResolutionScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2483171112407822886, guid: f54012181eacade4ea242c65f804720f, type: 3}
+      propertyPath: quest3MaxDynamicResolutionScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2483171112407822886, guid: f54012181eacade4ea242c65f804720f, type: 3}
+      propertyPath: quest3MinDynamicResolutionScale
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2514675399181695721, guid: f54012181eacade4ea242c65f804720f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5
@@ -42544,8 +42564,8 @@ MonoBehaviour:
   miniSpherePrefab: {fileID: 2877251215816945538, guid: 43abdaae7fc194f4e8186551e8c5c54d, type: 3}
   lineaCargaPositivaPrefab: {fileID: 9144462673293043558, guid: cf3bc5e1a1b23eb429e94daa8283c1e5, type: 3}
   lineaCargaNegativaPrefab: {fileID: 6250406608809342033, guid: afd492f4c45a0cc49a48643c2634f7d4, type: 3}
-  planoPositivoPrefab: {fileID: 3637808286258318141, guid: 071f23107163eaf439563c6d5d0d9449, type: 3}
-  planoNegativoPrefab: {fileID: 3637808286258318141, guid: 0ea6fbd3b4181f64cbf306c0366170f8, type: 3}
+  planoPositivoPrefab: {fileID: 5966618762918089304, guid: 4ffc4faa1c97ae4498652f3491bc4e9c, type: 3}
+  planoNegativoPrefab: {fileID: 5966618762918089304, guid: 82ceab9c2bb060d488d2558f466d747f, type: 3}
   offsetPlano: 5
   insertarPlanoPositivoBtn: {fileID: 1870183726}
   insertarPlanoNegativoBtn: {fileID: 1383756336}

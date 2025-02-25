@@ -116,13 +116,15 @@ public class MenuControl : MonoBehaviour
         ConfigurarPlano(nuevoPlano, esPositivo);
     }
 
+    // En el método ConfigurarPlano:
     void ConfigurarPlano(GameObject plano, bool esPositivo)
     {
-        PlanoFisico fisica = plano.GetComponent<PlanoFisico>();
+        PlanoCubo fisica = plano.GetComponent<PlanoCubo>(); // Cambiar PlanoFisico → PlanoCubo
         if (fisica != null)
         {
             float valor = esPositivo ? planoSlider.value : -planoSlider.value;
-            fisica.ConfigurarFuerza(valor);
+            fisica.fuerza = Mathf.Abs(valor); // Asignar fuerza directamente
+            fisica.esPositivo = esPositivo;    // Definir polaridad
             fisica.CambiarColor(esPositivo ? Color.red : Color.blue);
         }
     }
