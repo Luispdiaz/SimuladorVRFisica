@@ -49,6 +49,19 @@ public class CargaPuntualManager : MonoBehaviour
     public float fuerzaDeseada = 1f;
     public TextMeshProUGUI textoFuerza;
 
+    [Header("Mover Plano Arriba")]
+    public Transform moverPlanoArribaSpawnPoint; // Nuevo spawn point para mover el plano
+    public Button moverPlanoArribaButton;
+
+    public Transform moverPlanoIzquierdaSpawnPoint; // Spawn point para mover el plano a la izquierda
+    public Button moverPlanoIzquierdaButton;          // Botón para mover el plano a la izquierda
+
+    public Transform moverPlanoDerechaSpawnPoint;    // Spawn point para mover el plano a la derecha
+    public Button moverPlanoDerechaButton;             // Botón para mover el plano a la derecha
+
+    public Transform moverPlanoAbajoSpawnPoint;        // Spawn point para mover el plano hacia abajo
+    public Button moverPlanoAbajoButton;
+
 
     // Listas internas
     public List<GameObject> lineasCarga = new List<GameObject>();
@@ -126,6 +139,10 @@ public class CargaPuntualManager : MonoBehaviour
         insertarPlanoPositivoBtn.onClick.AddListener(IngresarPlanoPositivo);
         insertarPlanoNegativoBtn.onClick.AddListener(IngresarPlanoNegativo);
         sensorIndividualBtn.onClick.AddListener(CrearSensorIndividual);
+        moverPlanoArribaButton.onClick.AddListener(MoverPlanoArriba);
+        moverPlanoIzquierdaButton.onClick.AddListener(MoverPlanoIzquierda);
+        moverPlanoDerechaButton.onClick.AddListener(MoverPlanoDerecha);
+        moverPlanoAbajoButton.onClick.AddListener(MoverPlanoAbajo);
 
 
         lineasPunteadas = GetComponent<LineasPunteadas>() ?? gameObject.AddComponent<LineasPunteadas>();
@@ -971,6 +988,129 @@ public class CargaPuntualManager : MonoBehaviour
         sensores.Add(nuevoSensor);
         Debug.Log("Sensor individual creado con funcionalidad de arrastre");
     }
+
+    private void MoverPlanoIzquierda()
+    {
+        if (planos.Count == 0)
+        {
+            Debug.Log("No hay planos disponibles para mover.");
+            return;
+        }
+
+        GameObject planoCercano = null;
+        float minDistancia = Mathf.Infinity;
+
+        foreach (GameObject plano in planos)
+        {
+            float distancia = Vector3.Distance(plano.transform.position, moverPlanoIzquierdaSpawnPoint.position);
+            if (distancia < minDistancia)
+            {
+                minDistancia = distancia;
+                planoCercano = plano;
+            }
+        }
+
+        if (planoCercano != null)
+        {
+            planoCercano.transform.position = moverPlanoIzquierdaSpawnPoint.position;
+            // Rotar 90 grados en X para que quede paralelo al piso.
+            planoCercano.transform.rotation = Quaternion.Euler(90, 0, 0);
+            Debug.Log("Plano movido a la posición del spawn point Izquierda y rotado 90° en X.");
+        }
+    }
+
+    private void MoverPlanoDerecha()
+    {
+        if (planos.Count == 0)
+        {
+            Debug.Log("No hay planos disponibles para mover.");
+            return;
+        }
+
+        GameObject planoCercano = null;
+        float minDistancia = Mathf.Infinity;
+
+        foreach (GameObject plano in planos)
+        {
+            float distancia = Vector3.Distance(plano.transform.position, moverPlanoDerechaSpawnPoint.position);
+            if (distancia < minDistancia)
+            {
+                minDistancia = distancia;
+                planoCercano = plano;
+            }
+        }
+
+        if (planoCercano != null)
+        {
+            planoCercano.transform.position = moverPlanoDerechaSpawnPoint.position;
+            // Rotar 90 grados en X para que quede paralelo al piso.
+            planoCercano.transform.rotation = Quaternion.Euler(90, 0, 0);
+            Debug.Log("Plano movido a la posición del spawn point Derecha y rotado 90° en X.");
+        }
+    }
+
+    private void MoverPlanoArriba()
+    {
+        if (planos.Count == 0)
+        {
+            Debug.Log("No hay planos disponibles para mover.");
+            return;
+        }
+
+        GameObject planoCercano = null;
+        float minDistancia = Mathf.Infinity;
+
+        foreach (GameObject plano in planos)
+        {
+            float distancia = Vector3.Distance(plano.transform.position, moverPlanoArribaSpawnPoint.position);
+            if (distancia < minDistancia)
+            {
+                minDistancia = distancia;
+                planoCercano = plano;
+            }
+        }
+
+        if (planoCercano != null)
+        {
+            planoCercano.transform.position = moverPlanoArribaSpawnPoint.position;
+            // Asegurarse de que quede paralelo al piso (forzar X y Z en 0)
+            Vector3 currentEuler = planoCercano.transform.eulerAngles;
+            planoCercano.transform.eulerAngles = new Vector3(0, currentEuler.y, 0);
+            Debug.Log("Plano movido a la posición del spawn point Arriba y alineado.");
+        }
+    }
+
+    private void MoverPlanoAbajo()
+    {
+        if (planos.Count == 0)
+        {
+            Debug.Log("No hay planos disponibles para mover.");
+            return;
+        }
+
+        GameObject planoCercano = null;
+        float minDistancia = Mathf.Infinity;
+
+        foreach (GameObject plano in planos)
+        {
+            float distancia = Vector3.Distance(plano.transform.position, moverPlanoAbajoSpawnPoint.position);
+            if (distancia < minDistancia)
+            {
+                minDistancia = distancia;
+                planoCercano = plano;
+            }
+        }
+
+        if (planoCercano != null)
+        {
+            planoCercano.transform.position = moverPlanoAbajoSpawnPoint.position;
+            // Asegurarse de que quede paralelo al piso (forzar X y Z en 0)
+            Vector3 currentEuler = planoCercano.transform.eulerAngles;
+            planoCercano.transform.eulerAngles = new Vector3(0, currentEuler.y, 0);
+            Debug.Log("Plano movido a la posición del spawn point Abajo y alineado.");
+        }
+    }
+
 
 
 }
