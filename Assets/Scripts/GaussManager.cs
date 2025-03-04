@@ -177,25 +177,25 @@ public class GeometriaPiramidal : MonoBehaviour
         int numDivisionesCircunferencia = Mathf.CeilToInt(2 * Mathf.PI / angularStep);
         float alturaStep = alturaCilindro / divisionesAltura;
 
+        // Para determinar un tamaño base (lateral) uniforme, calculamos una escala global:
+        float patchWidthGlobal = radioCilindro * angularStep;
+        float patchHeightGlobal = alturaStep;
+        float sideGlobal = Mathf.Max(patchWidthGlobal, patchHeightGlobal);
+
+        // --- CREAR SUPERFICIE LATERAL DEL CILINDRO ---
         for (int i = 0; i <= divisionesAltura; i++)
         {
             float alturaActual = -alturaCilindro / 2 + i * alturaStep;
-
             for (int j = 0; j < numDivisionesCircunferencia; j++)
             {
                 float angulo = j * angularStep;
-
                 Vector3 normal = new Vector3(Mathf.Cos(angulo), 0, Mathf.Sin(angulo));
-                // Usar cylinderOrigin en lugar de sphereOrigin
+                // Posición en el lateral del cilindro
                 Vector3 centerPos = cylinderOrigin + normal * radioCilindro + new Vector3(0, alturaActual, 0);
                 centerPos -= normal * 0.35f;
 
-                // Calculamos los parámetros del parche para el cilindro:
-                float patchWidth = radioCilindro * angularStep;
-                float patchHeight = alturaStep;
-                // Para evitar compresión, usamos un valor uniforme para el eje X y Z.
-                float side = Mathf.Max(patchWidth, patchHeight);
-                Vector3 escala = new Vector3(side, alturaPiramide, side);
+                // Usamos el tamaño global calculado
+                Vector3 escala = new Vector3(sideGlobal, alturaPiramide, sideGlobal);
 
                 Vector3 inward = -normal;
                 Vector3 tangent = Vector3.Cross(inward, Vector3.up);
@@ -205,40 +205,96 @@ public class GeometriaPiramidal : MonoBehaviour
                 }
                 tangent.Normalize();
 
-                // Para el cilindro rotamos 40° extra sobre el eje Y (puedes ajustar este valor)
+                // Rotación para el lateral: alineamos el forward con el vector tangente y le sumamos 45° en Y.
                 Quaternion rot = Quaternion.LookRotation(tangent, inward) * Quaternion.Euler(0, 45, 0);
 
                 GameObject piramide = Instantiate(piramidePrefab, centerPos, rot);
                 piramide.transform.localScale = escala;
-                piramides.Add(piramide); // <--- Añade esta línea
+                piramides.Add(piramide);
 
-                // Asegúrate de que los objetos creados no afecten la física
+                // Desactivar física y collider
                 Rigidbody rb = piramide.GetComponent<Rigidbody>();
                 if (rb != null)
-                {
-                    rb.isKinematic = true;  // Desactiva la física
-                }
-
+                    rb.isKinematic = true;
                 Collider collider = piramide.GetComponent<Collider>();
                 if (collider != null)
-                {
-                    collider.enabled = false; // Desactiva el collider
-                }
-
-                // Ignorar la colisión entre el sensor y la esfera
-                foreach (var sensor in sensores) // Aquí accedemos a la lista correctamente
+                    collider.enabled = false;
+                // Ignorar colisiones con sensores
+                foreach (var sensor in sensores)
                 {
                     Collider sensorCollider = sensor.GetComponent<Collider>();
-                    if (sensorCollider != null)
+                    if (sensorCollider != null && collider != null)
                     {
                         Physics.IgnoreCollision(sensorCollider, collider);
                     }
                 }
-
-               
             }
         }
-        Debug.Log("Cilindro de pirámides creado.");
+
+        // --- CREAR TAPAS (CAPS) DEL CILINDRO ---
+        // Factor para reducir el tamaño de las tapas
+        float factorEscalaTapa = 0.8f;
+        Vector3 escalaTapa = new Vector3(sideGlobal * factorEscalaTapa, alturaPiramide, sideGlobal * factorEscalaTapa);
+
+        int radialDivisiones = 3; // Número de anillos radiales para cubrir cada tapa
+        float factorRadioCap = 0.5f; // Reducir el radio máximo de la distribución (para juntar más las pirámides)
+
+        // Offset vertical para que las tapas queden fuera del cilindro
+        float verticalTapaOffset = 0.05f; // Ajusta este valor según lo necesites
+
+        // Se crearán dos tapas: capa 0 para la inferior y capa 1 para la superior.
+        for (int capa = 0; capa < 2; capa++)
+        {
+            // Para la tapa superior, sumamos el offset; para la inferior, lo restamos.
+            float yCap = (capa == 1) ? (cylinderOrigin.y + alturaCilindro / 2 + verticalTapaOffset)
+                                      : (cylinderOrigin.y - alturaCilindro / 2 - verticalTapaOffset);
+            Vector3 capCenter = new Vector3(cylinderOrigin.x, yCap, cylinderOrigin.z);
+
+            // Distribuir las instancias en anillos radiales
+            for (int r = 0; r <= radialDivisiones; r++)
+            {
+                // Radio para el anillo actual, reducido por el factor para juntar las pirámides
+                float radioActual = (r / (float)radialDivisiones) * (radioCilindro * factorRadioCap);
+                // Número de divisiones angulares proporcional al anillo (mínimo 1)
+                int divisionesAngulares = (radioActual < 0.01f) ? 1 : Mathf.CeilToInt((2 * Mathf.PI * radioActual) / (sideGlobal * factorEscalaTapa));
+                for (int a = 0; a < divisionesAngulares; a++)
+                {
+                    float angulo = a * (2 * Mathf.PI / divisionesAngulares);
+                    // Posición en la tapa en coordenadas polares
+                    Vector3 posCapLocal = new Vector3(Mathf.Cos(angulo), 0, Mathf.Sin(angulo)) * radioActual;
+                    Vector3 finalPos = capCenter + posCapLocal;
+                    // Calcular la dirección desde esta posición hacia el centro de la tapa
+                    Vector3 direccion = (capCenter - finalPos).normalized;
+                    // Obtener una rotación que alinee el forward con la dirección
+                    Quaternion rotCap = Quaternion.LookRotation(direccion);
+                    // Aplicar offset de rotación independiente:
+                    if (capa == 0)
+                    {
+                        // Tapa inferior: se puede ajustar el offset aquí si es necesario.
+                        rotCap *= Quaternion.Euler(0, 0, 0);
+                    }
+                    else
+                    {
+                        // Tapa superior: se aplica un offset de 180° en X para que la punta apunte hacia adentro.
+                        rotCap *= Quaternion.Euler(180, 0, 0);
+                    }
+
+                    GameObject tapa = Instantiate(piramidePrefab, finalPos, rotCap);
+                    tapa.transform.localScale = escalaTapa;
+                    piramides.Add(tapa);
+
+                    // Desactivar física y collider
+                    Rigidbody rb = tapa.GetComponent<Rigidbody>();
+                    if (rb != null)
+                        rb.isKinematic = true;
+                    Collider col = tapa.GetComponent<Collider>();
+                    if (col != null)
+                        col.enabled = false;
+                }
+            }
+        }
+
+        Debug.Log("Cilindro de pirámides con tapas creado.");
     }
 
 
@@ -348,9 +404,10 @@ public class GeometriaPiramidal : MonoBehaviour
 
             foreach (var plano in planos)
             {
-                // Solo mover al centro del cilindro (sin modificar rotación/ escala)
-                Vector3 posicionPlano = cylinderOrigin + new Vector3(0, -alturaCilindro / 2, 0);
-                plano.transform.position = posicionPlano;
+                // Reposicionar exactamente en el centro del cilindro y aplicar rotación para que quede paralelo al suelo
+                Vector3 posicionPlano = cylinderOrigin; // Usamos el centro del cilindro
+                Quaternion rotacionPlano = Quaternion.Euler(180, 0, 0);
+                plano.transform.SetPositionAndRotation(posicionPlano, rotacionPlano);
             }
         }
 

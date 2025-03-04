@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using TMPro;
 
 public class MenuControl : MonoBehaviour
 {
@@ -21,124 +22,212 @@ public class MenuControl : MonoBehaviour
     [Header("Spawn Point")]
     public Transform spawnPoint;
 
+
     [Header("Referencias Explícitas de Botones")]
-    public Button positivoArribaBtn;
-    public Button positivoAbajoBtn;
-    public Button positivoIzquierdaBtn;
-    public Button positivoDerechaBtn;
-    public Button negativoArribaBtn;
-    public Button negativoAbajoBtn;
-    public Button negativoIzquierdaBtn;
-    public Button negativoDerechaBtn;
+    public Button closeButton;
+    public GameObject subMenuCarga;  // Asegurar que está asignado en el Inspector
+    public GameObject tituloSubMenu; // Asegurar que está asignado en el Inspector
+
+    [Header("Dirección de Lanzamiento")]
+    public GameObject direccionIndicatorPrefab; // Prefab con eje X como frente
+    public Transform puntoReferenciaLanzamiento; // Punto de origen del lanzamiento
+    private GameObject currentIndicator;
+
+    [Header("UI de Ángulos")]
+    public TMP_Text textoAnguloHorizontal; // Asignar en Inspector
+    public TMP_Text textoAnguloVertical;   // Asignar en Inspector
+    public TMP_Text textoAnguloFlecha;     // Asignar en Inspector
+
+    [Header("Velocidad Configuration")]
+    public TMP_Text textoVelocidad; // Nuevo texto para mostrar velocidad
+
+    [Header("Botón de Lanzamiento")]
+    public Button lanzarCargaButton; // Asignar en Inspector
+
+
+    // Referencia al manager de cargas (debe asignarse en el Inspector)
+    public CargaPuntualManager cargaManager;
+    // Nuevo spawn point para mover la carga
+    public Transform moverCargaSpawnPoint;
+    // Botón que ejecutará la acción
+    public Button moverCargaButton;
+
 
     private readonly string[] direcciones = { "Arriba", "Abajo", "Izquierda", "Derecha" };
 
     private void Start()
     {
-        ConfigurarSliders();
-        ConfigurarBotonesPlanosExplicitamente();
-    }
-    void ConfigurarBotonesPlanosExplicitamente()
-    {
-        // Botones positivos
-        positivoArribaBtn.onClick.AddListener(() => CrearPlano("Arriba", true));
-        positivoAbajoBtn.onClick.AddListener(() => CrearPlano("Abajo", true));
-        positivoIzquierdaBtn.onClick.AddListener(() => CrearPlano("Izquierda", true));
-        positivoDerechaBtn.onClick.AddListener(() => CrearPlano("Derecha", true));
+        subMenuCarga.SetActive(false);
+        tituloSubMenu.SetActive(false);
+        moverCargaButton.onClick.AddListener(MoverCargaALaPosicionSpawn);
+        // Añadir listener al closeButton (redundante por seguridad)
+        closeButton.onClick.AddListener(CerrarSubMenu);
+        horizontalSlider.onValueChanged.AddListener(UpdateDirectionIndicator);
+        verticalSlider.onValueChanged.AddListener(UpdateDirectionIndicator);
+        // Configurar sliders con pasos de 0.05
+        horizontalSlider.onValueChanged.AddListener(v => horizontalSlider.value = Mathf.Round(v / 0.05f) * 0.05f);
+        verticalSlider.onValueChanged.AddListener(v => verticalSlider.value = Mathf.Round(v / 0.05f) * 0.05f);
 
-        // Botones negativos
-        negativoArribaBtn.onClick.AddListener(() => CrearPlano("Arriba", false));
-        negativoAbajoBtn.onClick.AddListener(() => CrearPlano("Abajo", false));
-        negativoIzquierdaBtn.onClick.AddListener(() => CrearPlano("Izquierda", false));
-        negativoDerechaBtn.onClick.AddListener(() => CrearPlano("Derecha", false));
-    }
+        // Configurar slider de velocidad con valores enteros
+        velocidadSlider.wholeNumbers = true;
+        velocidadSlider.minValue = 0;
+        velocidadSlider.maxValue = 20;
+        velocidadSlider.onValueChanged.AddListener(UpdateVelocidadText);
+        UpdateVelocidadText(velocidadSlider.value);
+        lanzarCargaButton.onClick.AddListener(LanzarCarga);
 
-    void ConfigurarSliders()
-    {
-        planoSlider.minValue = 0.1f;
-        planoSlider.maxValue = 20f;
-        horizontalSlider.minValue = -90f;
-        horizontalSlider.maxValue = 90f;
-        verticalSlider.minValue = -90f;
-        verticalSlider.maxValue = 90f;
-        velocidadSlider.minValue = 0f;
-        velocidadSlider.maxValue = 100f;
+
     }
 
-    void ConfigurarBotonesPlanos()
+    // Actualizar texto de velocidad
+    private void UpdateVelocidadText(float value)
     {
-        // Configurar botones positivos
-        for (int i = 0; i < botonesPositivos.Count; i++)
-        {
-            string direccion = direcciones[i];
-            botonesPositivos[i].onClick.AddListener(() => CrearPlano(direccion, true));
-        }
-
-        // Configurar botones negativos
-        for (int i = 0; i < botonesNegativos.Count; i++)
-        {
-            string direccion = direcciones[i];
-            botonesNegativos[i].onClick.AddListener(() => CrearPlano(direccion, false));
-        }
+        textoVelocidad.text = $"{value:F0} m/s";
     }
 
-    public void CrearPlano(string direccion, bool esPositivo)
+    private void UpdateAngleDisplays()
     {
-        if (planoPrefab == null) return;
+        // Ángulos de los sliders
+        float anguloHorizontal = Mathf.Lerp(0f, 180f, horizontalSlider.value);
+        float anguloVertical = Mathf.Lerp(0f, 180f, verticalSlider.value);
 
-        Vector3 posicion = spawnPoint != null ? spawnPoint.position : Vector3.zero;
-        Vector3 rotacion = Vector3.zero;
+        // Formatear textos
+        textoAnguloHorizontal.text = $"Horizontal: {anguloHorizontal:F0}°";
+        textoAnguloVertical.text = $"Vertical: {anguloVertical:F0}°";
 
-        switch (direccion)
-        {
-            case "Arriba":
-                posicion = new Vector3(0, esPositivo ? offsetPosicion : -offsetPosicion, 0);
-                rotacion = esPositivo ? new Vector3(0, 0, 0) : new Vector3(180, 0, 0);
-                break;
 
-            case "Abajo":
-                posicion = new Vector3(0, esPositivo ? -offsetPosicion : offsetPosicion, 0);
-                rotacion = esPositivo ? new Vector3(180, 0, 0) : new Vector3(0, 0, 0);
-                break;
+        // Calcular dirección usando el FORWARD de la flecha
+        Vector3 direccionFlecha = currentIndicator.transform.forward;
+        float anguloFlecha = Mathf.Atan2(direccionFlecha.z, direccionFlecha.x) * Mathf.Rad2Deg;
 
-            case "Izquierda":
-                posicion = new Vector3(esPositivo ? -offsetPosicion : offsetPosicion, 0, 0);
-                rotacion = esPositivo ? new Vector3(0, 0, 90) : new Vector3(0, 0, 270);
-                break;
+        // Ajustar ángulo a rango 0-360
+        if (anguloFlecha < 0) anguloFlecha += 360f;
 
-            case "Derecha":
-                posicion = new Vector3(esPositivo ? offsetPosicion : -offsetPosicion, 0, 0);
-                rotacion = esPositivo ? new Vector3(0, 0, 270) : new Vector3(0, 0, 90);
-                break;
-        }
-
-        GameObject nuevoPlano = Instantiate(planoPrefab, posicion, Quaternion.Euler(rotacion));
-        ConfigurarPlano(nuevoPlano, esPositivo);
+        textoAnguloFlecha.text = $"Total: {anguloFlecha:F0}°";
     }
 
-    // En el método ConfigurarPlano:
-    void ConfigurarPlano(GameObject plano, bool esPositivo)
-    {
-        PlanoCubo fisica = plano.GetComponent<PlanoCubo>(); // Cambiar PlanoFisico → PlanoCubo
-        if (fisica != null)
-        {
-            float valor = esPositivo ? planoSlider.value : -planoSlider.value;
-            fisica.fuerza = Mathf.Abs(valor); // Asignar fuerza directamente
-            fisica.esPositivo = esPositivo;    // Definir polaridad
-            fisica.CambiarColor(esPositivo ? Color.red : Color.blue);
-        }
-    }
 
-    // Métodos para la Carga (mantenemos la estructura básica)
-    public void LanzarCarga()
+    public void CerrarSubMenu()
     {
-        Vector3 direccion = CalcularDireccion();
-        float velocidad = velocidadSlider.value;
-        // Lógica de lanzamiento aquí
+        Debug.Log("Cerrando submenú (BarrasManager)");
+        if (subMenuCarga == null) Debug.LogError("subMenuCarga no asignado en BarrasManager");
+        if (tituloSubMenu == null) Debug.LogError("tituloSubMenu no asignado en BarrasManager");
+
+        if (subMenuCarga != null) subMenuCarga.SetActive(false);
+        if (tituloSubMenu != null) tituloSubMenu.SetActive(false);
+        if (currentIndicator != null) Destroy(currentIndicator);
     }
 
     Vector3 CalcularDireccion()
     {
         return Quaternion.Euler(verticalSlider.value, horizontalSlider.value, 0) * Vector3.forward;
+    }
+
+    private void MoverCargaALaPosicionSpawn()
+    {
+        if (cargaManager == null)
+        {
+            Debug.LogError("No se ha asignado el CargaPuntualManager.");
+            return;
+        }
+
+        // Obtener la lista de cargas desde el manager
+        List<GameObject> cargas = cargaManager.Cargas;
+        if (cargas == null || cargas.Count == 0)
+        {
+            Debug.Log("No existen cargas para mover.");
+            return;
+        }
+
+        // Buscar la carga más cercana al spawn point nuevo
+        GameObject cargaCercana = null;
+        float minDistancia = Mathf.Infinity;
+        foreach (GameObject carga in cargas)
+        {
+            float distancia = Vector3.Distance(carga.transform.position, moverCargaSpawnPoint.position);
+            if (distancia < minDistancia)
+            {
+                minDistancia = distancia;
+                cargaCercana = carga;
+            }
+        }
+
+        if (cargaCercana != null)
+        {
+            cargaCercana.transform.position = moverCargaSpawnPoint.position;
+            Debug.Log("Carga movida a la posición del nuevo spawn point.");
+        }
+        else
+        {
+            Debug.Log("No se encontró ninguna carga cercana al spawn point.");
+        }
+    }
+    private void UpdateDirectionIndicator(float value)
+    {
+        if (currentIndicator == null)
+        {
+            currentIndicator = Instantiate(direccionIndicatorPrefab, puntoReferenciaLanzamiento.position, Quaternion.identity);
+        }
+
+        // Ajustar ángulos con pasos de 0.05 (sin cambios)
+        float verticalValue = Mathf.Round(verticalSlider.value / 0.05f) * 0.05f;
+        float horizontalValue = Mathf.Round(horizontalSlider.value / 0.05f) * 0.05f;
+
+        // 1. Invertir solo el vertical (0° = arriba, 180° = abajo)
+        float verticalAngle = Mathf.Lerp(180f, 0f, verticalValue); // Único cambio necesario
+
+        // 2. Rotación horizontal se mantiene igual
+        float horizontalAngle = Mathf.Lerp(0f, 180f, horizontalValue);
+
+        // 3. Aplicar rotaciones (misma lógica original)
+        Quaternion baseRotation = Quaternion.Euler(0, -90f, 0);
+        Quaternion rotVertical = Quaternion.Euler(0, 0, verticalAngle); // Eje Z (para mantener compatibilidad)
+        Quaternion rotHorizontal = Quaternion.Euler(0, horizontalAngle, 0);
+
+        currentIndicator.transform.rotation = baseRotation * rotHorizontal * rotVertical;
+        currentIndicator.transform.position = puntoReferenciaLanzamiento.position;
+        UpdateAngleDisplays();
+    }
+
+    public void LanzarCarga()
+    {
+        if (currentIndicator == null || cargaManager == null) return;
+
+        GameObject carga = cargaManager.Cargas.Count > 0 ? cargaManager.Cargas[^1] : null;
+
+        if (carga != null)
+        {
+            // Añadir componente EstelaCarga si no existe
+            EstelaCarga estelaScript = carga.GetComponent<EstelaCarga>();
+            if (estelaScript == null)
+            {
+                estelaScript = carga.AddComponent<EstelaCarga>();
+                estelaScript.miniSpherePrefab = cargaManager.miniSpherePrefab; // Asignar prefab desde el manager
+            }
+            estelaScript.DetenerEstela(); // Limpiar estela previa
+            estelaScript.IniciarEstela();
+
+            Rigidbody rb = carga.GetComponent<Rigidbody>();
+            if (rb == null) rb = carga.AddComponent<Rigidbody>();
+            rb.isKinematic = false;
+            rb.useGravity = false;
+            rb.linearVelocity = Vector3.zero;
+
+            // 1. Obtener dirección inicial del indicador
+            float anguloHorizontal = Mathf.Lerp(-90f, 90f, horizontalSlider.value) - 90f;
+            float anguloVertical = Mathf.Lerp(90f, -90f, verticalSlider.value);
+            Vector3 direccion = Quaternion.Euler(anguloVertical, anguloHorizontal, 0) * Vector3.forward;
+
+            // 2. Aplicar fuerza inicial
+            float velocidad = velocidadSlider.value;
+            rb.AddForce(direccion * velocidad, ForceMode.VelocityChange);
+
+            // 3. Activar el movimiento controlado
+            Carga scriptCarga = carga.GetComponent<Carga>();
+            if (scriptCarga != null)
+            {
+                scriptCarga.IniciarMovimiento();
+            }
+        }
     }
 }

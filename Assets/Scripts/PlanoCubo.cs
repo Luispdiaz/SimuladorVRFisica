@@ -5,6 +5,7 @@ public class PlanoCubo : MonoBehaviour
     public bool esPositivo;
     public float fuerza;
     private Renderer rend;
+    public bool invertirDireccion;
 
     void Start()
     {
@@ -14,6 +15,18 @@ public class PlanoCubo : MonoBehaviour
     {
         if (rend != null)
             rend.material.color = nuevoColor;
+    }
+    public Vector3 CalcularFuerza(bool esCargaPositiva)
+    {
+        // Usamos transform.forward como base (como en el código original)
+        Vector3 direccion = esPositivo ? transform.forward : -transform.forward;
+        // Rotamos la dirección 90° sobre el eje X (esto convierte una dirección horizontal en vertical)
+        Vector3 direccionRotada = Quaternion.Euler(90, 0, 0) * direccion;
+        // Aplicar inversión si es necesario
+        if (invertirDireccion) direccionRotada *= -1;
+        float signo = (esPositivo == esCargaPositiva) ? -1f : 1f; // Repulsión o atracción
+        Debug.Log(esCargaPositiva);
+        return direccionRotada * fuerza * signo;
     }
 
     public Vector3 CalcularFuerzaPlano(Vector3 posicionSensor)

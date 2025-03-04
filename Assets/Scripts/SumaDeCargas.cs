@@ -39,6 +39,8 @@ public class SumaDeCargas : MonoBehaviour
         animacionEnCurso = true;
         animacionActiva = true;
 
+        yield return new WaitForEndOfFrame();
+
         foreach (GameObject sensor in sensores)
         {
             if (!sensor.CompareTag("sensor detalle")) continue;
@@ -307,30 +309,15 @@ public class SumaDeCargas : MonoBehaviour
 
         if (distancia < 0.01f) return Vector3.zero;
 
-        float magnitud = plano.fuerza / distancia;
+        float magnitud = plano.fuerza / distancia; // <--- Ajuste aquí
         if (!plano.esPositivo) magnitud *= -1;
 
         return magnitud * direccion.normalized;
     }
-
     /// <summary>
     /// Se actualizan todas las flechas para todas las fuentes y sensores.
     /// </summary>
-    private void LateUpdate()
-    {
-        if (animacionActiva) return;
-
-        LimpiarFuentesInvalidas();
-        posicionesFinalesPorSensor.Clear();
-
-        // Añadir solo planos ACTIVOS y no registrados previamente
-        foreach (var plano in FindObjectsOfType<PlanoCubo>()
-                             .Where(p => p.gameObject.activeInHierarchy
-                                      && !flechasPorFuentePorSensor.ContainsKey(p.gameObject)))
-        {
-            CrearOActualizarFlechaParaFuente(plano.gameObject);
-        }
-    }
+ 
 
     public void LimpiarFuentesInvalidas()
     {
@@ -356,20 +343,20 @@ public class SumaDeCargas : MonoBehaviour
 
     public void EliminarTodasLasFlechas()
     {
-        foreach (var fuenteEntry in flechasPorFuentePorSensor.ToList())
+        // Recorre todas las flechas almacenadas y destrúyelas
+        foreach (var fuenteEntry in flechasPorFuentePorSensor)
         {
-            foreach (var sensorEntry in fuenteEntry.Value.ToList())
+            foreach (var sensorEntry in fuenteEntry.Value)
             {
-                GameObject flecha = sensorEntry.Value;
-                if (flecha != null)
+                if (sensorEntry.Value != null)
                 {
-                    Destroy(flecha); // Destruir inmediatamente
+                    Destroy(sensorEntry.Value);
                 }
-                fuenteEntry.Value.Remove(sensorEntry.Key); // Eliminar entrada del diccionario
             }
-            flechasPorFuentePorSensor.Remove(fuenteEntry.Key); // Eliminar fuente del diccionario
         }
+        // Limpia completamente el diccionario
         flechasPorFuentePorSensor.Clear();
         posicionesFinalesPorSensor.Clear();
     }
+
 }

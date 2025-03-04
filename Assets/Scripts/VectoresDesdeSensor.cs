@@ -1,18 +1,18 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 
 public class VectoresDesdeSensor : MonoBehaviour
 {
     public GameObject flechaPrefab; // Prefab de la flecha
     public List<GameObject> sensores = new List<GameObject>(); // Lista de sensores
-    // Diccionario anidado: para cada fuente (carga o línea de carga), se asocia un diccionario que mapea cada sensor a su flecha
+    // Diccionario anidado: para cada fuente (carga o lï¿½nea de carga), se asocia un diccionario que mapea cada sensor a su flecha
     public Dictionary<GameObject, Dictionary<GameObject, GameObject>> flechasPorFuentePorSensor = new Dictionary<GameObject, Dictionary<GameObject, GameObject>>();
     private Dictionary<GameObject, Vector3> posicionesFinalesPorSensor = new Dictionary<GameObject, Vector3>(); // (Opcional) Para almacenar posiciones finales si se requiere
 
     public float factorEscalaFuerza = 0.1f; // Factor de escala para la longitud de las flechas
 
     /// <summary>
-    /// Crea o actualiza la flecha para una fuente de fuerza (carga o línea de carga) en todos los sensores detalle.
+    /// Crea o actualiza la flecha para una fuente de fuerza (carga o lï¿½nea de carga) en todos los sensores detalle.
     /// </summary>
     /// <param name="fuente">La fuente de fuerza.</param>
     public void CrearOActualizarFlechaParaFuente(GameObject fuente)
@@ -45,8 +45,8 @@ public class VectoresDesdeSensor : MonoBehaviour
     }
 
     /// <summary>
-    /// Actualiza la posición, rotación y escala de la flecha para un sensor específico y una fuente dada.
-    /// Mantiene la apariencia original: la flecha se posiciona en el sensor, se escala y rota según la fuerza.
+    /// Actualiza la posiciï¿½n, rotaciï¿½n y escala de la flecha para un sensor especï¿½fico y una fuente dada.
+    /// Mantiene la apariencia original: la flecha se posiciona en el sensor, se escala y rota segï¿½n la fuerza.
     /// </summary>
     /// <param name="sensor">El sensor detalle.</param>
     /// <param name="fuente">La fuente de fuerza.</param>
@@ -69,9 +69,9 @@ public class VectoresDesdeSensor : MonoBehaviour
         {
             direccionFuerza = CalcularFuerzaLinea(lineaScript, sensor.transform.position);
         }
-        else if (planoScript != null)  // Lógica para planos
+        else if (planoScript != null)  // Lï¿½gica para planos
         {
-            direccionFuerza = planoScript.CalcularFuerzaPlano(sensor.transform.position);
+            direccionFuerza = CalcularFuerzaPlano(planoScript, sensor.transform.position);
         }
 
         // Si la fuerza es cero, no mostramos la flecha
@@ -82,7 +82,7 @@ public class VectoresDesdeSensor : MonoBehaviour
         }
         else
         {
-            flecha.SetActive(true);  // Asegura que la flecha esté activa
+            flecha.SetActive(true);  // Asegura que la flecha estï¿½ activa
         }
 
         float magnitudFuerza = direccionFuerza.magnitude;
@@ -108,17 +108,24 @@ public class VectoresDesdeSensor : MonoBehaviour
         }
 
         flecha.transform.rotation = Quaternion.LookRotation(direccionFuerza) * Quaternion.Euler(90, 0, 0);
-        // Se posiciona la flecha en la posición del sensor (manteniendo la lógica original)
+        // Se posiciona la flecha en la posiciï¿½n del sensor (manteniendo la lï¿½gica original)
         flecha.transform.position = sensor.transform.position;
 
-        // Actualiza el color de la flecha según el tipo de fuente
-        Color color;
+        // Actualiza el color de la flecha segï¿½n el tipo de fuente
+        Color color = Color.white; // Valor por defecto
+
         if (cargaScript != null)
+        {
             color = cargaScript.esPositiva ? Color.red : Color.blue;
+        }
         else if (lineaScript != null)
+        {
             color = lineaScript.esPositiva ? Color.magenta : Color.cyan;
-        else
-            color = planoScript.esPositivo ? new Color(1f, 0.4f, 0.6f) : new Color(0.5f, 0f, 0.5f);  // Usar tu variable
+        }
+        else if (planoScript != null)
+        {
+            color = planoScript.esPositivo ? new Color(1f, 0.4f, 0.6f) : new Color(0.5f, 0f, 0.5f);
+        }
 
         ActualizarColor(flecha, color);
     }
@@ -161,17 +168,20 @@ public class VectoresDesdeSensor : MonoBehaviour
     private Vector3 CalcularFuerzaPlano(PlanoCubo plano, Vector3 posicionSensor)
     {
         Collider collider = plano.GetComponent<Collider>();
-        if (collider == null) return Vector3.zero;
+        if (collider == null)
+            return Vector3.zero;
 
-        // Usa la lógica de tu componente PlanoCubo
         Vector3 puntoCercano = collider.ClosestPoint(posicionSensor);
         Vector3 direccion = posicionSensor - puntoCercano;
         float distancia = direccion.magnitude;
 
-        if (distancia < 0.01f) return Vector3.zero;
+        if (distancia < 0.01f)
+            return Vector3.zero;
 
-        float magnitud = plano.fuerza / distancia;
-        if (!plano.esPositivo) magnitud = -magnitud;
+        // Usar inverso cuadrado (igual que en SumaDeCargas)
+        float magnitud = plano.fuerza / distancia; // <--- Cambio clave
+        if (!plano.esPositivo)
+            magnitud *= -1;
 
         return magnitud * direccion.normalized;
     }

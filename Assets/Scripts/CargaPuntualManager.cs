@@ -719,7 +719,7 @@ public class CargaPuntualManager : MonoBehaviour
             turnoSumaDeCargasActivo = true;
             sumaDeCargas.sensores = sensores;
 
-            // NUEVO: Limpiamos y guardamos la posición actual de cada sensor detalle
+            // Guardar posición inicial de cada sensor detalle
             posInicialSensoresDetalle.Clear();
             foreach (var sensor in sensores)
             {
@@ -729,7 +729,7 @@ public class CargaPuntualManager : MonoBehaviour
                 }
             }
 
-            // NUEVO: Guardar posición inicial de cada carga y línea
+            // Guardar posición inicial de cada carga, línea y plano
             posInicialCargasLineas.Clear();
             foreach (var c in cargas)
             {
@@ -739,12 +739,22 @@ public class CargaPuntualManager : MonoBehaviour
             {
                 posInicialCargasLineas[l] = l.transform.position;
             }
+            // *** Agregamos los planos:
+            foreach (var p in planos)
+            {
+                posInicialCargasLineas[p] = p.transform.position;
+            }
 
-            // Crear flechas de SumaDeCargas como siempre
-            foreach (var c in cargas) sumaDeCargas.CrearOActualizarFlechaParaFuente(c);
-            foreach (var l in lineasCarga) sumaDeCargas.CrearOActualizarFlechaParaFuente(l);
+            // Crear flechas de Suma de Cargas para cada fuente
+            foreach (var c in cargas)
+                sumaDeCargas.CrearOActualizarFlechaParaFuente(c);
+            foreach (var l in lineasCarga)
+                sumaDeCargas.CrearOActualizarFlechaParaFuente(l);
+            // *** Crear flechas para cada plano:
+            foreach (var p in planos)
+                sumaDeCargas.CrearOActualizarFlechaParaFuente(p);
 
-            // Iniciar la animación si existe
+            // Iniciar la animación (si corresponde)
             sumaDeCargas.IniciarAnimacionSuma();
         }
     }
@@ -1012,12 +1022,18 @@ public class CargaPuntualManager : MonoBehaviour
 
         if (planoCercano != null)
         {
+            PlanoCubo script = planoCercano.GetComponent<PlanoCubo>();
+            if (script != null)
+            {
+                // Si el plano es NEGATIVO, invertir la dirección
+                script.invertirDireccion = !script.esPositivo; // true para negativos, false para positivos
+            }
             planoCercano.transform.position = moverPlanoIzquierdaSpawnPoint.position;
-            // Rotar 90 grados en X para que quede paralelo al piso.
             planoCercano.transform.rotation = Quaternion.Euler(90, 0, 0);
-            Debug.Log("Plano movido a la posición del spawn point Izquierda y rotado 90° en X.");
+            Debug.Log("Plano movido izquierda. Invertir dirección: " + script.invertirDireccion);
         }
     }
+
 
     private void MoverPlanoDerecha()
     {
@@ -1042,10 +1058,15 @@ public class CargaPuntualManager : MonoBehaviour
 
         if (planoCercano != null)
         {
+            PlanoCubo script = planoCercano.GetComponent<PlanoCubo>();
+            if (script != null)
+            {
+                // Invertir dirección si el plano es POSITIVO
+                script.invertirDireccion = script.esPositivo; // true para positivos, false para negativos
+            }
             planoCercano.transform.position = moverPlanoDerechaSpawnPoint.position;
-            // Rotar 90 grados en X para que quede paralelo al piso.
             planoCercano.transform.rotation = Quaternion.Euler(90, 0, 0);
-            Debug.Log("Plano movido a la posición del spawn point Derecha y rotado 90° en X.");
+            Debug.Log("Plano movido derecha. Invertir dirección: " + script.invertirDireccion);
         }
     }
 
@@ -1072,11 +1093,15 @@ public class CargaPuntualManager : MonoBehaviour
 
         if (planoCercano != null)
         {
+            PlanoCubo script = planoCercano.GetComponent<PlanoCubo>();
+            if (script != null)
+            {
+                // Invertir dirección si el plano es POSITIVO
+                script.invertirDireccion = script.esPositivo; // true para positivos, false para negativos
+            }
             planoCercano.transform.position = moverPlanoArribaSpawnPoint.position;
-            // Asegurarse de que quede paralelo al piso (forzar X y Z en 0)
-            Vector3 currentEuler = planoCercano.transform.eulerAngles;
-            planoCercano.transform.eulerAngles = new Vector3(0, currentEuler.y, 0);
-            Debug.Log("Plano movido a la posición del spawn point Arriba y alineado.");
+            planoCercano.transform.rotation = Quaternion.Euler(0, 0, 0); // Ajuste de rotación
+            Debug.Log("Plano movido arriba. Invertir dirección: " + script.invertirDireccion);
         }
     }
 
@@ -1103,12 +1128,31 @@ public class CargaPuntualManager : MonoBehaviour
 
         if (planoCercano != null)
         {
+            PlanoCubo script = planoCercano.GetComponent<PlanoCubo>();
+            if (script != null)
+            {
+                // Invertir dirección si el plano es NEGATIVO
+                script.invertirDireccion = !script.esPositivo; // true para negativos, false para positivos
+            }
             planoCercano.transform.position = moverPlanoAbajoSpawnPoint.position;
-            // Asegurarse de que quede paralelo al piso (forzar X y Z en 0)
-            Vector3 currentEuler = planoCercano.transform.eulerAngles;
-            planoCercano.transform.eulerAngles = new Vector3(0, currentEuler.y, 0);
-            Debug.Log("Plano movido a la posición del spawn point Abajo y alineado.");
+            planoCercano.transform.rotation = Quaternion.Euler(0, 0, 0); // Ajuste de rotación
+            Debug.Log("Plano movido abajo. Invertir dirección: " + script.invertirDireccion);
         }
+    }
+
+
+    public void EliminarPlano(GameObject plano)
+    {
+        planos.Remove(plano);
+
+        if (sumaDeCargas.flechasPorFuentePorSensor.ContainsKey(plano))
+        {
+            var dict = sumaDeCargas.flechasPorFuentePorSensor[plano];
+            foreach (var flecha in dict.Values)
+                Destroy(flecha);
+            sumaDeCargas.flechasPorFuentePorSensor.Remove(plano);
+        }
+        Destroy(plano);
     }
 
 
