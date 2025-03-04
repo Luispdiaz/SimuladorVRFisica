@@ -12,6 +12,7 @@ TagManager:
   - plano
   - SensorIndividualDireccion
   - PlanoFisico
+  - Desactivable
   layers:
   - Default
   - TransparentFX

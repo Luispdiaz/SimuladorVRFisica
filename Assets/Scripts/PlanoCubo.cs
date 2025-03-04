@@ -25,7 +25,6 @@ public class PlanoCubo : MonoBehaviour
         // Aplicar inversión si es necesario
         if (invertirDireccion) direccionRotada *= -1;
         float signo = (esPositivo == esCargaPositiva) ? -1f : 1f; // Repulsión o atracción
-        Debug.Log(esCargaPositiva);
         return direccionRotada * fuerza * signo;
     }
 
