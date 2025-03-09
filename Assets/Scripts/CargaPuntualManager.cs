@@ -116,6 +116,16 @@ public class CargaPuntualManager : MonoBehaviour
     public Button lineasDeCampoBtn; // Asignar en Inspector
     private bool lineasDeCampoActivas = false;
 
+    [Header("Configuración de Formaciones")]
+    public Transform[] spawnPointsLinea = new Transform[2];
+    public Transform[] spawnPointsTriangulo = new Transform[3];
+    public Transform[] spawnPointsCuadrado = new Transform[4];
+    public Transform[] spawnPointsPentagono = new Transform[5];
+    public Button botonFormacionLinea;
+    public Button botonFormacionTriangulo;
+    public Button botonFormacionCuadrado;
+    public Button botonFormacionPentagono;
+
 
 
     private void Start()
@@ -143,6 +153,10 @@ public class CargaPuntualManager : MonoBehaviour
         moverPlanoIzquierdaButton.onClick.AddListener(MoverPlanoIzquierda);
         moverPlanoDerechaButton.onClick.AddListener(MoverPlanoDerecha);
         moverPlanoAbajoButton.onClick.AddListener(MoverPlanoAbajo);
+        botonFormacionLinea.onClick.AddListener(FormacionLinea);
+        botonFormacionTriangulo.onClick.AddListener(FormacionTriangulo);
+        botonFormacionCuadrado.onClick.AddListener(FormacionCuadrado);
+        botonFormacionPentagono.onClick.AddListener(FormacionPentagono);
 
 
         lineasPunteadas = GetComponent<LineasPunteadas>() ?? gameObject.AddComponent<LineasPunteadas>();
@@ -1153,6 +1167,65 @@ public class CargaPuntualManager : MonoBehaviour
             sumaDeCargas.flechasPorFuentePorSensor.Remove(plano);
         }
         Destroy(plano);
+    }
+
+    private void MoverCargasAFormacion(Transform[] spawnPoints)
+    {
+        if (cargas.Count < spawnPoints.Length)
+        {
+            Debug.LogWarning($"No hay suficientes cargas. Se necesitan {spawnPoints.Length}");
+            return;
+        }
+
+        List<GameObject> cargasNoMovidas = new List<GameObject>(cargas);
+
+        foreach (Transform spawnPoint in spawnPoints)
+        {
+            GameObject cargaMasCercana = null;
+            float minDistancia = Mathf.Infinity;
+
+            // Buscar la carga más cercana no asignada
+            foreach (GameObject carga in cargasNoMovidas)
+            {
+                float distancia = Vector3.Distance(carga.transform.position, spawnPoint.position);
+                if (distancia < minDistancia)
+                {
+                    minDistancia = distancia;
+                    cargaMasCercana = carga;
+                }
+            }
+
+            if (cargaMasCercana != null)
+            {
+                // Mover y eliminar de la lista de no movidas
+                cargaMasCercana.transform.position = spawnPoint.position;
+                cargasNoMovidas.Remove(cargaMasCercana);
+            }
+        }
+    }
+
+    public void FormacionLinea()
+    {
+        MoverCargasAFormacion(spawnPointsLinea);
+        Debug.Log("Cargas organizadas en formación lineal");
+    }
+
+    public void FormacionTriangulo()
+    {
+        MoverCargasAFormacion(spawnPointsTriangulo);
+        Debug.Log("Cargas organizadas en formación triangular");
+    }
+
+    public void FormacionCuadrado()
+    {
+        MoverCargasAFormacion(spawnPointsCuadrado);
+        Debug.Log("Cargas organizadas en formación cuadrada");
+    }
+
+    public void FormacionPentagono()
+    {
+        MoverCargasAFormacion(spawnPointsPentagono);
+        Debug.Log("Cargas organizadas en formación pentagonal");
     }
 
 
