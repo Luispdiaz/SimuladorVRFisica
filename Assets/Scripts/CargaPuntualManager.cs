@@ -17,6 +17,9 @@ public class CargaPuntualManager : MonoBehaviour
     public Button vectoresDesdeSensorButton;
     public Button closeButton;
     public Button closeButton1;
+    public Button flexometroButton;
+    public Flexometro flexometro;
+    private bool modoFlexometroActivo = false;
     public Button recalcularButton;
     public Button insertarLineaPositivaBtn;
     public Button insertarLineaNegativaBtn;
@@ -157,6 +160,7 @@ public class CargaPuntualManager : MonoBehaviour
         botonFormacionTriangulo.onClick.AddListener(FormacionTriangulo);
         botonFormacionCuadrado.onClick.AddListener(FormacionCuadrado);
         botonFormacionPentagono.onClick.AddListener(FormacionPentagono);
+        flexometroButton.onClick.AddListener(RecalcularFlexometroToggle);
 
 
         lineasPunteadas = GetComponent<LineasPunteadas>() ?? gameObject.AddComponent<LineasPunteadas>();
@@ -349,6 +353,11 @@ public class CargaPuntualManager : MonoBehaviour
                 indicador.ActualizarDireccion(fuerza);
             }
         }
+
+        if (modoFlexometroActivo)
+        {
+            flexometro.ActualizarMedicion();
+        }
     }
 
     /// <summary> Crea un sensor de voltaje. </summary>
@@ -470,7 +479,7 @@ public class CargaPuntualManager : MonoBehaviour
         float distancia = direccion.magnitude;
         if (distancia < 0.01f) return Vector3.zero;
 
-        float magnitud = scriptLinea.densidadCarga / distancia;
+        float magnitud = (scriptLinea.densidadCarga * 2) / distancia;
         if (!scriptLinea.esPositiva) magnitud *= -1;
         return magnitud * direccion.normalized;
     }
@@ -507,6 +516,18 @@ public class CargaPuntualManager : MonoBehaviour
             if (distancia < 0.01f) continue;
 
             float contrib = scriptLinea.densidadCarga * Mathf.Log(distancia);
+            voltaje += contrib;
+        }
+
+        foreach (var planoObj in planos)
+        {
+            var scriptPlano = planoObj.GetComponent<PlanoCubo>();
+            if (scriptPlano == null) continue;
+
+            float distancia = Vector3.Distance(posicion, planoObj.transform.position);
+            if (distancia < 0.01f) continue;
+
+            float contrib = 2 * Mathf.PI * scriptPlano.fuerza * distancia;
             voltaje += contrib;
         }
 
@@ -1226,6 +1247,22 @@ public class CargaPuntualManager : MonoBehaviour
     {
         MoverCargasAFormacion(spawnPointsPentagono);
         Debug.Log("Cargas organizadas en formación pentagonal");
+    }
+
+    private void RecalcularFlexometroToggle()
+    {
+        if (modoFlexometroActivo)
+        {
+            // Si ya estaba activo, lo desactivamos y destruimos sus líneas
+            flexometro.FinalizarMedicion();
+            modoFlexometroActivo = false;
+        }
+        else
+        {
+            // Si estaba inactivo, lo activamos y creamos sus líneas
+            flexometro.IniciarMedicion();
+            modoFlexometroActivo = true;
+        }
     }
 
 

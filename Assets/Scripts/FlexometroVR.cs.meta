@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ef934e9afdb09bd49b66650c7787bc53
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - esferaInicioPrefab: {fileID: 3637432273030169283, guid: 9a096651d7e8aed43827e6fcfd6e010e, type: 3}
+  - esferaFinPrefab: {fileID: 3637432273030169283, guid: 9a096651d7e8aed43827e6fcfd6e010e, type: 3}
+  - miniEsferaPunteadaPrefab: {fileID: 2877251215816945538, guid: 43abdaae7fc194f4e8186551e8c5c54d, type: 3}
+  - textoDistanciaPrefab: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

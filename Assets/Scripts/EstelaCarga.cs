@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class EstelaCarga : MonoBehaviour
 {
     public GameObject miniSpherePrefab;
-    public float intervalo = 0.01f; // Tiempo entre cada esfera
+    public float intervalo = 0.005f; // Tiempo entre cada esfera
     public float duracionEsfera = 2f; // Tiempo antes de destruir cada esfera
 
     private List<GameObject> estela = new List<GameObject>();

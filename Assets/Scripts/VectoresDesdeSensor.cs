@@ -159,7 +159,7 @@ public class VectoresDesdeSensor : MonoBehaviour
         if (distancia < 0.01f)
             return Vector3.zero;
 
-        float magnitud = linea.densidadCarga / distancia;
+        float magnitud = (2 * linea.densidadCarga) / distancia;
         if (!linea.esPositiva)
             magnitud *= -1;
 
@@ -179,7 +179,7 @@ public class VectoresDesdeSensor : MonoBehaviour
             return Vector3.zero;
 
         // Usar inverso cuadrado (igual que en SumaDeCargas)
-        float magnitud = plano.fuerza / distancia; // <--- Cambio clave
+        float magnitud = 2 * Mathf.PI * plano.fuerza;
         if (!plano.esPositivo)
             magnitud *= -1;
 

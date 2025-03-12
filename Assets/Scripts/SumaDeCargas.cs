@@ -293,7 +293,7 @@ public class SumaDeCargas : MonoBehaviour
 
         if (distancia < 0.01f) return Vector3.zero;
 
-        float magnitud = linea.densidadCarga / distancia;
+        float magnitud = (2 * linea.densidadCarga) / distancia;
         if (!linea.esPositiva) magnitud *= -1;
 
         return magnitud * direccion.normalized;
@@ -309,7 +309,7 @@ public class SumaDeCargas : MonoBehaviour
 
         if (distancia < 0.01f) return Vector3.zero;
 
-        float magnitud = plano.fuerza / distancia; // <--- Ajuste aquí
+        float magnitud = 2 * Mathf.PI * plano.fuerza;// <--- Ajuste aquí
         if (!plano.esPositivo) magnitud *= -1;
 
         return magnitud * direccion.normalized;

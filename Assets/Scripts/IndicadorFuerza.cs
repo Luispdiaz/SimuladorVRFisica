@@ -92,7 +92,9 @@ public class IndicadorFuerza : MonoBehaviour
                     }
                     else if (tipoCampo == TipoMagnitud.CampoElectrico)
                     {
-                        textoFuerza.text = $"{magnitudFuerza:F2}"; // Campo El�ctrico
+                        // Asegúrate de tener habilitado Rich Text en tu TextMeshPro
+                        textoFuerza.text = $"{magnitudFuerza:F2} E<sub>µ</sub>";
+                        // Campo El�ctrico
                     }
                 }
             }

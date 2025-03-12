@@ -41,7 +41,7 @@ public class PlanoCubo : MonoBehaviour
         if (distancia < 0.01f) return Vector3.zero;
 
         // Fórmula simplificada (similar a cargas puntuales)
-        float magnitud = fuerza / distancia;
+        float magnitud = 2 * Mathf.PI * fuerza;
         if (!esPositivo) magnitud = -magnitud;
 
         return magnitud * direccion.normalized;
