@@ -22,10 +22,39 @@ public class Carga : MonoBehaviour
                 Vector3 fuerzaPlano = plano.CalcularFuerza(esPositiva);
                 rb.AddForce(fuerzaPlano, ForceMode.Acceleration);
             }
+
+            // Aplicar fuerza de todas las líneas infinitas
+            foreach (var linea in FindObjectsOfType<LineaCarga>())
+            {
+                Vector3 fuerzaLinea = CalcularFuerzaLinea(linea);
+                rb.AddForce(fuerzaLinea, ForceMode.Acceleration);
+            }
         }
     }
 
-    // Detener simulación al colisionar con un plano
+    Vector3 CalcularFuerzaLinea(LineaCarga linea)
+    {
+        Collider colliderLinea = linea.GetComponent<Collider>();
+        if (colliderLinea == null) return Vector3.zero;
+
+        // 1. Obtener punto más cercano en la línea
+        Vector3 puntoMasCercano = colliderLinea.ClosestPoint(transform.position);
+
+        // 2. Calcular dirección y distancia
+        Vector3 direccion = transform.position - puntoMasCercano;
+        float distancia = direccion.magnitude;
+        if (distancia < 0.01f) return Vector3.zero;
+
+        // 3. Calcular magnitud (k=1 simplificado)
+        float k = 1f;
+        float cargaLinea = linea.densidadCarga * (linea.esPositiva ? 1f : -1f);
+        float magnitud = (2 * k * cargaLinea * fuerza) / distancia;
+
+        // 4. Aplicar dirección y polaridad
+        return direccion.normalized * magnitud * (esPositiva ? 1f : -1f);
+    }
+
+    // Resto del código sin cambios...
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("PlanoFisico") && enMovimiento)
@@ -38,10 +67,9 @@ public class Carga : MonoBehaviour
         }
     }
 
-    // Método para activar el movimiento desde BarrasManager
     public void IniciarMovimiento()
     {
         enMovimiento = true;
-        Time.timeScale = 1; // Asegurar que el tiempo esté activo
+        Time.timeScale = 1;
     }
 }

@@ -293,7 +293,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   esferaInicioPrefab: {fileID: 3637432273030169283}
   esferaFinPrefab: {fileID: 3637432273030169283}
-  miniEsferaPunteadaPrefab: {fileID: 2877251215816945538, guid: 43abdaae7fc194f4e8186551e8c5c54d, type: 3}
+  miniEsferaPunteadaPrefab: {fileID: 2877251215816945538, guid: 667bb93be9b0a51449e9c813b133d5c7, type: 3}
   densidadEsferas: 0.2
   decimales: 2
   offsetTexto: 0.1

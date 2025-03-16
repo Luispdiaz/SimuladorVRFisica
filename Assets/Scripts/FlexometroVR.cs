@@ -81,15 +81,29 @@ public class Flexometro : MonoBehaviour
     {
         LimpiarEsferasPunteadas();
 
-        int cantidad = Mathf.CeilToInt(distancia / densidadEsferas);
+        // Ajusta el paso para acercar más las esferas (si así lo deseas).
+        float pasoReal = densidadEsferas * 0.12f;
+        int cantidad = Mathf.CeilToInt(distancia / pasoReal);
+
         for (int i = 0; i < cantidad; i++)
         {
             float t = i / (float)cantidad;
             Vector3 pos = Vector3.Lerp(inicio, fin, t);
-            var miniEsfera = Instantiate(miniEsferaPunteadaPrefab, pos, Quaternion.identity);
+
+            // 1) Instancia con rotación neutra (Quaternion.identity)
+            GameObject miniEsfera = Instantiate(miniEsferaPunteadaPrefab, pos, Quaternion.identity);
+
+            // 2) Fijar la rotación en el espacio mundial
+            miniEsfera.transform.rotation = Quaternion.Euler(0, 0, 90);
+
+            // 3) (Opcional) Asegurarte de que no queden parentadas a un objeto que rote
+            miniEsfera.transform.SetParent(null, true);
+
             esferasPunteadas.Add(miniEsfera);
         }
     }
+
+
 
     private void LimpiarEsferasPunteadas()
     {

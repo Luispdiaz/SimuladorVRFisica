@@ -6,8 +6,7 @@ MonoImporter:
   defaultReferences:
   - esferaInicioPrefab: {fileID: 3637432273030169283, guid: 9a096651d7e8aed43827e6fcfd6e010e, type: 3}
   - esferaFinPrefab: {fileID: 3637432273030169283, guid: 9a096651d7e8aed43827e6fcfd6e010e, type: 3}
-  - miniEsferaPunteadaPrefab: {fileID: 2877251215816945538, guid: 43abdaae7fc194f4e8186551e8c5c54d, type: 3}
-  - textoDistanciaPrefab: {instanceID: 0}
+  - miniEsferaPunteadaPrefab: {fileID: 2430898068417072976, guid: fcd91ecd0ab45dc48a91c47e067524b1, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

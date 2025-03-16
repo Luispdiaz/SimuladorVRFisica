@@ -408,6 +408,7 @@ public class GeometriaPiramidal : MonoBehaviour
                 Vector3 posicionPlano = cylinderOrigin; // Usamos el centro del cilindro
                 Quaternion rotacionPlano = Quaternion.Euler(180, 0, 0);
                 plano.transform.SetPositionAndRotation(posicionPlano, rotacionPlano);
+                plano.transform.localScale = new Vector3(5f, 0.001f, 5f);
             }
         }
 
