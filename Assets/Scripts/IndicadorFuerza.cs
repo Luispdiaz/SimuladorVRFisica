@@ -88,7 +88,7 @@ public class IndicadorFuerza : MonoBehaviour
                     // Dependiendo del tipo de magnitud, cambiar la unidad mostrada
                     if (tipoCampo == TipoMagnitud.LeyDeCoulomb)
                     {
-                        textoFuerza.text = $"{magnitudFuerza:F2}"; // Ley de Coulomb
+                        textoFuerza.text = $"{magnitudFuerza:F2} F<sub>µ</sub>"; // Ley de Coulomb
                     }
                     else if (tipoCampo == TipoMagnitud.CampoElectrico)
                     {
@@ -114,6 +114,15 @@ public class IndicadorFuerza : MonoBehaviour
 
         // Guardar la posici�n actual para detectar movimiento en el pr�ximo frame
         ultimaPosicion = transform.position;
+    }
+
+    public void CambiarColor(Color nuevoColor)
+    {
+        Renderer indicadorRenderer = GetComponent<Renderer>();
+        if (indicadorRenderer != null)
+        {
+            indicadorRenderer.material.color = nuevoColor;
+        }
     }
 
 

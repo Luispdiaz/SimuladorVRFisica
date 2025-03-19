@@ -949,8 +949,17 @@ public class CargaPuntualManager : MonoBehaviour
         if (indicador != null)
         {
             indicador.ActualizarDireccion(fuerzaFinal);
+
+            // Cambiar el color del indicador de fuerza cuando se calcule la Ley de Coulomb
+            Renderer indicadorRenderer = indicador.GetComponent<Renderer>();
+            if (indicadorRenderer != null)
+            {
+                // Asignar un color cuando se esté calculando la Ley de Coulomb
+                indicadorRenderer.material.color = Color.blue;  // Color azul para Ley de Coulomb
+            }
         }
     }
+
 
     // Método para generar la grilla de sensores
     private void GenerarSensoresEnGrid()
